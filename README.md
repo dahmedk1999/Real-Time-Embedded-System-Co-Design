@@ -1,119 +1,51 @@
-# SJ2-C Getting Started
+# SJ2-C Development Environment
 
-## Setup and Install
+An `SJ2` board is used at San Jose State University (SJSU) to teach Embedded Systems' courses. Part of this Git repository also includes development environment for not just an ARM controller, but also support to compile and test software on your host machine such as Windows, Mac etc.
 
-Setup and install should be super simple unless you have Windows, which is not suited for ideal software development, but you can still use it. These steps should still get you setup regardless of your OS.
+The sample project of the SJ2 board contains code written in C that anyone can understand easily. It was designed to **learn the low level workings of a microcontroller platform with an RTOS**:
 
-1. Install Python on Windows (Mac and Linux should already have that)
-    * Skip this for Mac or Linux
-    * Follow [this guide](installs/README.md) for Windows install guide
-2. Open up a terminal window or command prompt, and install `scons`:
-    * Type `pip install scons`
-    * If any issues on Ubuntu(Linux), try `sudo apt install scons`
-3. Install the Board driver from the `installs/drivers` directory
+Project highlights:
 
-That is it, you should now be ready to build software for your board.
+- Fully implemented in C
+- Minimalistic design with little to no abstractions
+- Follows good coding principles (such as YAGNI and DRY)
 
-### Additional dependencies for Mac and Linux
+Infrastructure highlights:
 
-In order to run the unit-tests, `Ruby` and a `GCC compiler` is required for Mac and Linux. This is because the unit-tests compile an executable you run on your host machine, and it is not compiled for running on the embedded ARM target.
-
-* For *Windows*, we have checked in Ruby and MinGW (Minimal GCC for Windows) already
-* In *Linux*, the GCC (development tools) should already be installed as part of default installation of Ubuntu
-* For *Mac*, you may have to install GCC equivalent which should be as easy as typing `xcode-select --install`
+- Supports Mac, Linux, Windows out of the box
+- Version controlled toolchains and other supplementary tools
+- No VMs
+- No WSL dependency on Windows
 
 ----
 
-## Compile & Flash
+## Next Steps
 
-1. Use any IDE and open up the `lpc40xx_freertos` folder
-    * We recommend `Visual Studio Code`
-    * You can work on your code in an IDE and use command line to compile
-2. Build the project:
-    * **From the root directory** of this `sjtwo-c` folder, type: `scons`
-3. Invoke the python script to flash your new program
-    * From the root of `sjtwo-c` folder, type: `python nxp-programmer/flash.py` and it might just work :)
-    * The `flash.py` defaults to `lpc40xx_freertos.bin` file and auto detects your SJ2 serial port
-    * See [nxp-programmer README](nxp-programmer/README.md) and more examples in the following *Examples* section
-4. After flashing your new program, use your favorite serial terminal to watch the output from your board.
-
-### SCons 
-
-Full documentation of the `SCons` command [is listed at this README](README-SCons.md). This should be read so you fully understand how to build various different projects and run the unit-tests.
-
-### Typical Workflow
-
-This describes typical commands you will use to compile and flash the project:
-
-```bash
-# 1. Edit your code and save it in Visual Studio Code
-
-# 2. This will run unit tests and compile the `lpc40xx_freertos` project
-scons
-
-# 3. Finally, flash the project
-python nxp-programmer/flash.py
-```
-
-### More advanced stuff
-```bash
-# Optionally, you can clean and compile the LPC project
-
-# To clean compiled artifacts for the default project `lpc40xx_freertos`
-scons -c
-
-# You can compile the `lpc40xx_freertos` project without running unit-tests
-# Warning: If unit-tests fail, you will waste a lot of time debugging it on 
-# the controller, so do not skip them
-scons --no-unit-test
-
-# Compile with multiple threads (use as many threads as your machine has
-# Since I have 12, I will use -j12
-scons -j12
-```
+- [Build and Flash Project](README-GETTING-STARTED.md) 
+- [Read more about SCons](README-SCons.md) to figure out how to build projects
 
 ----
 
-## How `flash.py` works
+## Build System
 
-This script takes a COM port and your firmware file to program, however:
-*  COM port can be automatically detected if `--port` argument is not provided
-*  Firmware file is defaulted to `_build_lpc40xx_freertos/lpc40xx_freertos.bin` if `--input` argument is not provided
+We use [SCons](https://scons.org/) as our build platform. The developers of SJ2-C applied experience of diverse set of build systems acquired over many years, and resorted to this one. The candidates were:
 
-Example:
-```bash
-python nxp-programmer/flash.py --port <Device Port> --input <.bin file path>`
-# <Device Port>    is your serial port
-# <.bin file path> is the path to your firmware you want to load to the board
+- SCons (used at Tesla, and many other companies)
+- Bazel (used at Google, Zoox and many other companies)
+- Make
 
-# The script can auto-detects your `--port`, so you should be able to flash using:
-python nxp-programmer/flash.py --input _build_lpc40xx_freertos/lpc40xx_freertos.bin`
-```
+SCons discusses the advantages and disadvantages of other existing build systems: [Build System Comparison](https://github.com/SCons/scons/wiki/sconsvsotherbuildtools)
 
-### More `flash.py` Examples
+From experience, we can state that `bazel` is really cool, but hard to extend and problematic in Windows. SCons dependencies are tricky, but it is based on python and easy to understand and extend. SCons takes advantage of a Python interpreter making it portable across multiple platforms (Mac, Linux, Windows).
 
-Providing an explicit `--port` may be faster to program, but initially you would need to know what `--port` your SJ board is at. Try using `python nxp-programmer/flash.py` which will use the default binary file, and automatically find the port for you, otherwise follow the examples below:
+----
 
-```bash
-# All these examples will default to use "_build_lpc40xx_freertos/lpc40xx_freertos.bin"
+## History
 
-# Example on Windows:
-python nxp-programmer/flash.py --port COM6
+We wanted to build a strong foundational sample project for SJ-2 development board that is used at SJSU.
 
-# Example on Linux:
-python nxp-programmer/flash.py --port /dev/ttyUSB
+Originally, Preet created "SJ1" development board, which meant that there was one development board across multiple classes at SJSU. I was an enthusiast and created a hybrid project composed of C and C++ sources. I love C++ a little more than C because I can express artistic designs in the language, but a language is really a tool, and you need to select the right tool for the job. Presently I work on Embedded *Firmware* code for automotive industry which is in C, and *Software* code in C++, because C is the right tool for firmware, and C++ is the right tool for software. "SJ2" [original](https://github.com/kammce/SJSU-Dev2) software was also designed by an enthusiast (Khalil), who is a very talented person, but expressing a starter project in C++ increased the complexity so much that many developers had a difficult time adopting it.
 
-# Example on Mac:
-python nxp-programmer/flash.py --port /dev/tty.SLAB_USBtoUART
+This is where the *SJ2-C* was born, which was completely re-designed to write simple code that everyone could understand. Many students are new to programming and it was not expected that C++ would come naturally. The code may appear less fancy, but it is simple to understand and traceable with minimal abstractions. The goal is to avoid designing yet another Arduino platform. There is no such thing as magic in the field of firmware engineering.
 
-# ##################################
-# Fully explicit command on windows:
-python nxp-programmer/flash.py --port COM6 --input _build_lpc40xx_freertos/lpc40xx_freertos.bin
-```
-
-### Advanced Tips
-
-* You can use `-i` (single dash) in place of `--input`
-* You can use `-p` (single dash) in place of `--port`
-* If `-i` is not provided, then the tool will default to `_build_lpc40xx_freertos/lpc40xx_freertos.bin`
-* So, you could use: `python nxp-programmer/flash.py --device /dev/ttyUSB`
+----
