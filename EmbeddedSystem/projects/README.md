@@ -24,7 +24,7 @@ python nxp-programmer/flash.py --input _build_lab2/lab2.bin
 
 
 ## Lab3: GPIO Interrupt - Dynamic User Defined ISR Callback Driver
-![image](https://user-images.githubusercontent.com/38081550/95835603-48a08e00-0cf3-11eb-9d4f-1c6d447c46cc.png)
+![image](https://user-images.githubusercontent.com/38081550/95846327-27926a00-0d00-11eb-9556-bc060a716a56.png)
 ![Alt text](http://books.socialledge.com/uploads/images/gallery/2019-09-Sep/isr.gif)
 
 ### OBJECTIVE
@@ -79,6 +79,7 @@ python nxp-programmer/flash.py --input _build_lab4/lab4.bin
 ```
 
 ## Lab5: SPI Flash Interface
+![image](https://user-images.githubusercontent.com/38081550/95846493-54df1800-0d00-11eb-9b6e-521936e632cd.png)
 ![image](https://user-images.githubusercontent.com/38081550/95843009-134c6e00-0cfc-11eb-8725-93fad87deb26.png)
 
 ### OBJECTIVE
@@ -104,6 +105,7 @@ python nxp-programmer/flash.py --input _build_lab5/lab5.bin
 
 ## Lab6: Universal Asynchronous Receiver-Transmitter (UART)  
 ![image](https://user-images.githubusercontent.com/38081550/95844496-d41f1c80-0cfd-11eb-80f7-2fb2d33b2d91.png)
+![Alt text](http://www.openrtos.net/queue_animation.gif)
 
 ### OBJECTIVE
 The objective is to learn how to create a thread-safe driver for Synchronous Serial Port and to communicate with an external SPI Flash device.
