@@ -2,6 +2,8 @@
 
 An `SJ2` board is used at San Jose State University (SJSU) to teach Embedded Systems' courses. Part of this Git repository also includes development environment for not just an ARM controller, but also support to compile and test software on your host machine such as Windows, Mac etc.
 
+![Capture](https://user-images.githubusercontent.com/38081550/95831514-fa3cc080-0ced-11eb-847a-52d7fe5dc403.PNG)
+
 The sample project of the SJ2 board contains code written in C that anyone can understand easily. It was designed to **learn the low level workings of a microcontroller platform with an RTOS**:
 
 Project highlights:
