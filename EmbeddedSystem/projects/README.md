@@ -20,14 +20,14 @@ scons --project=lab2
 # SJ2 Board Flash Command:
 python nxp-programmer/flash.py --input _build_lab2/lab2.bin
 ```
-## Lab3: GPIO Interrupt 
+## Lab3: GPIO Interrupt - Dynamic User Defined ISR Callback Driver
 ![image](https://user-images.githubusercontent.com/38081550/95835603-48a08e00-0cf3-11eb-9d4f-1c6d447c46cc.png)
 ![Alt text](http://books.socialledge.com/uploads/images/gallery/2019-09-Sep/isr.gif)
 Learn how to create a single dynamic user defined interrupt service routine callback driver/library
 
 OBJECTIVE
 1. Semaphores
-    * Wait on [Semaphore Design pattern] (http://books.socialledge.com/books/embedded-drivers-real-time-operating-systems/page/binary-semaphores#bkmrk-design-patternhttp://books.socialledge.com/books/embedded-drivers-real-time-operating-systems/page/binary-semaphores#bkmrk-design-pattern)
+    * Wait on [Semaphore Design pattern](http://books.socialledge.com/books/embedded-drivers-real-time-operating-systems/page/binary-semaphores#bkmrk-design-pattern)
 2. [Lookup table](http://books.socialledge.com/books/embedded-drivers-real-time-operating-systems/page/lookup-tables) structures and Function Pointers
     * code will allow the user to register their callbacks
     * Be sure to understand how [function pointers](http://books.socialledge.com/books/useful-knowledge/page/function-pointer) work
