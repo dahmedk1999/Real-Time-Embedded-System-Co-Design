@@ -35,9 +35,9 @@ OBJECTIVE
     * These port/pin interrupts are actually OR'd together and use a single CPU interrupt.
     * On the SJ2 board, GPIO interrupts are handled by a dedicated GPIO interrupt (exception number 54)
     
-* L3-Driver       [GPIO Header](lab3/l3_drivers/gpio_isr.h).
+* L3-Driver       [GPIO ISR Header](lab3/l3_drivers/gpio_isr.h).
 
-* L3-Driver       [GPIO Source](lab3/l3_drivers/sources/gpio_isr.c).
+* L3-Driver       [GPIO ISR Source](lab3/l3_drivers/sources/gpio_isr.c).
 
 * L5-Application  [main](lab3/l5_application/main.c)
 ```
