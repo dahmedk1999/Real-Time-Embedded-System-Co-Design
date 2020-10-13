@@ -20,6 +20,7 @@ scons --project=lab2
 # SJ2 Board Flash Command:
 python nxp-programmer/flash.py --input _build_lab2/lab2.bin
 ```
+
 ## Lab3: GPIO Interrupt - Dynamic User Defined ISR Callback Driver
 ![image](https://user-images.githubusercontent.com/38081550/95835603-48a08e00-0cf3-11eb-9d4f-1c6d447c46cc.png)
 ![Alt text](http://books.socialledge.com/uploads/images/gallery/2019-09-Sep/isr.gif)
@@ -49,22 +50,17 @@ python nxp-programmer/flash.py --input _build_lab3/lab3.bin
 ```
 
 ## lpc40xx_freertos
-
 * This the primary LPC40xx project with all of the sources
 * This is the default project that gets compiled when you simply type `scons` without any arguments
-
 Build the project by using any of these commands:
 ```
 scons
-
 scons --project=lpc40xx_freertos
 
 # Build without any printf/scanf of float (saves program flash space, and is faster to program)
 scons --project=lpc40xx_freertos --no-float-format
-
 # Build without unit tests
 scons --project=lpc40xx_freertos --no-float-format --no-unit-test
-
 # Build with multiple threads on your machine
 scons --project=lpc40xx_freertos --no-float-format --no-unit-test -j32
 
