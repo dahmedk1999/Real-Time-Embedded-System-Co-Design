@@ -1,5 +1,6 @@
 # This folder contains sample projects that you can build
 
+All the lab is based on material from [SJSU CMPE-146 - Professor Kang Preep](http://books.socialledge.com/books/embedded-drivers-real-time-operating-systems)
 
 ## Lab2: GPIO Driver 
 ![image](https://user-images.githubusercontent.com/38081550/95832812-ac28bc80-0cef-11eb-9eea-3b6b61dd5132.png)
