@@ -49,6 +49,33 @@ scons --project=lab3
 python nxp-programmer/flash.py --input _build_lab3/lab3.bin
 ```
 
+## Lab4: ADC Driver + PWM Driver + FreeRTOS Queue
+![image](https://user-images.githubusercontent.com/38081550/95839486-ed24cf00-0cf7-11eb-86e2-49fced46a6e1.png)
+
+
+OBJECTIVE
+Improve an ADC driver, and use an existing PWM driver to design and implement an embedded application, which uses RTOS queues to communicate between tasks.
+1. ADC Driver
+   * Develop the driver functionality
+   * Use a potentiometer that controls the analog voltage feeding into an analog pin of microcontroller
+2. PWM Driver
+   * Develop PWM Driver to control a GPIO 
+   * An led brightness will be controlled, then create multiple colors using an RGB LED
+3. FreeRTOS Tasks
+   * Use FreeRTOS queues to communicate between ADC_Task and PWM_Task  
+* L3-Driver       [ADC Header](lab4/l3_drivers/adc.h)     [PWM Header](lab4/l3_drivers/pwm1.h).
+
+* L3-Driver       [ADC Source](lab4/l3_drivers/adc.c)     [PWM Source](lab4/l3_drivers/pwm1.c).
+
+* L5-Application  [main](lab4/l5_application/main.c)
+```
+# Compile Command:
+scons --project=lab3
+
+# SJ2 Board Flash Command:
+python nxp-programmer/flash.py --input _build_lab3/lab3.bin
+```
+
 ## lpc40xx_freertos
 * This the primary LPC40xx project with all of the sources
 * This is the default project that gets compiled when you simply type `scons` without any arguments
