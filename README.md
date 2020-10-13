@@ -21,7 +21,7 @@ Infrastructure highlights:
 
 ## Next Steps
 
-- [Build and Flash Project](README-GETTING-STARTED.md) 
+- [Build and Flash Project](Setup-Getting-Started.md) 
 - [Read more about SCons](README-SCons.md) to figure out how to build projects
 
 ----
