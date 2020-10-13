@@ -1,5 +1,6 @@
 # This folder contains sample projects that you can build
 
+
 ## Lab2: GPIO Driver 
 ![image](https://user-images.githubusercontent.com/38081550/95832812-ac28bc80-0cef-11eb-9eea-3b6b61dd5132.png)
 
@@ -20,6 +21,7 @@ scons --project=lab2
 # SJ2 Board Flash Command:
 python nxp-programmer/flash.py --input _build_lab2/lab2.bin
 ```
+
 
 ## Lab3: GPIO Interrupt - Dynamic User Defined ISR Callback Driver
 ![image](https://user-images.githubusercontent.com/38081550/95835603-48a08e00-0cf3-11eb-9d4f-1c6d447c46cc.png)
@@ -49,9 +51,9 @@ scons --project=lab3
 python nxp-programmer/flash.py --input _build_lab3/lab3.bin
 ```
 
+
 ## Lab4: ADC Driver + PWM Driver + FreeRTOS Queue
 ![image](https://user-images.githubusercontent.com/38081550/95839486-ed24cf00-0cf7-11eb-86e2-49fced46a6e1.png)
-
 
 OBJECTIVE
 Improve an ADC driver, and use an existing PWM driver to design and implement an embedded application, which uses RTOS queues to communicate between tasks.
@@ -76,6 +78,28 @@ scons --project=lab3
 python nxp-programmer/flash.py --input _build_lab3/lab3.bin
 ```
 
+## Lab5: SPI Flash Interface
+![image](https://user-images.githubusercontent.com/38081550/95843009-134c6e00-0cfc-11eb-8725-93fad87deb26.png)
+
+OBJECTIVE
+The objective is to learn how to create a thread-safe driver for Synchronous Serial Port and to communicate with an external SPI Flash device.
+1. SPI Driver
+   * Develop the driver functionality
+   * Develop SPI Flash Interface to be able to read and write a "page" of the SPI [flash memory](https://www.adestotech.com/wp-content/uploads/DS-AT25SF041_044.pdf)
+2. Mutex Thread-Safe example
+   * attempt to read Adesto flash manufacturer ID in two tasks simultaneously using Mutex
+ 
+* L3-Driver       [SPI Header](lab5/l3_drivers/ssp2_lab.h)     
+
+* L3-Driver       [SPI Source](lab5/l3_drivers/sources/ssp2_lab.c)     
+* L5-Application  [main](lab5/l5_application/main.c)
+```
+# Compile Command:
+scons --project=lab3
+
+# SJ2 Board Flash Command:
+python nxp-programmer/flash.py --input _build_lab3/lab3.bin
+```
 ## lpc40xx_freertos
 * This the primary LPC40xx project with all of the sources
 * This is the default project that gets compiled when you simply type `scons` without any arguments
