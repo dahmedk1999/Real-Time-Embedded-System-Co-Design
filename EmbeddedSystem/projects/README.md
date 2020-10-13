@@ -3,8 +3,8 @@ This folder contains sample projects that you can build
 ## Lab2: GPIO Driver 
 ![image](https://user-images.githubusercontent.com/38081550/95832812-ac28bc80-0cef-11eb-9eea-3b6b61dd5132.png)
 
-L3-Driver[GPIO Header](/lab2/l3_drivers/gpio_lab.h)
-L3-Driver[GPIO Source](/lab2/l3_drivers/sources/gpio_lab.c)
+*L3-Driver[GPIO Header](lab2/l3_drivers/gpio_lab.h)
+*L3-Driver[GPIO Source](lab2/l3_drivers/sources/gpio_lab.c)
 
 L5-Application[main](/lab2/l5_application/main.c)
 ```
