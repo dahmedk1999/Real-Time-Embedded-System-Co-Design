@@ -4,7 +4,7 @@
 ## Lab2: GPIO Driver 
 ![image](https://user-images.githubusercontent.com/38081550/95832812-ac28bc80-0cef-11eb-9eea-3b6b61dd5132.png)
 
-OBJECTIVE
+### OBJECTIVE
 1. Manipulate microcontroller's registers in order to access and control physical pins.
 2. Use implemented driver to sense input signals and control LEDs.
 3. Use FreeRTOS binary semaphore to signal between tasks.
@@ -27,7 +27,7 @@ python nxp-programmer/flash.py --input _build_lab2/lab2.bin
 ![image](https://user-images.githubusercontent.com/38081550/95835603-48a08e00-0cf3-11eb-9d4f-1c6d447c46cc.png)
 ![Alt text](http://books.socialledge.com/uploads/images/gallery/2019-09-Sep/isr.gif)
 
-OBJECTIVE
+### OBJECTIVE
 1. Semaphores
     * Wait on [Semaphore Design pattern](http://books.socialledge.com/books/embedded-drivers-real-time-operating-systems/page/binary-semaphores#bkmrk-design-pattern)
 2. [Lookup table](http://books.socialledge.com/books/embedded-drivers-real-time-operating-systems/page/lookup-tables) structures and Function Pointers
@@ -55,7 +55,7 @@ python nxp-programmer/flash.py --input _build_lab3/lab3.bin
 ## Lab4: ADC Driver + PWM Driver + FreeRTOS Queue
 ![image](https://user-images.githubusercontent.com/38081550/95839486-ed24cf00-0cf7-11eb-86e2-49fced46a6e1.png)
 
-OBJECTIVE
+### OBJECTIVE
 Improve an ADC driver, and use an existing PWM driver to design and implement an embedded application, which uses RTOS queues to communicate between tasks.
 1. ADC Driver
    * Develop the driver functionality
@@ -81,7 +81,7 @@ python nxp-programmer/flash.py --input _build_lab3/lab3.bin
 ## Lab5: SPI Flash Interface
 ![image](https://user-images.githubusercontent.com/38081550/95843009-134c6e00-0cfc-11eb-8725-93fad87deb26.png)
 
-OBJECTIVE
+### OBJECTIVE
 The objective is to learn how to create a thread-safe driver for Synchronous Serial Port and to communicate with an external SPI Flash device.
 1. SPI Driver
    * Develop the driver functionality
