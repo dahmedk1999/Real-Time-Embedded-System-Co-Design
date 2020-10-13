@@ -1,6 +1,6 @@
 This folder contains sample projects that you can build
 
-## Lab2: GPIOO Driver 
+## Lab2: GPIO Driver 
 
 ```
 # Compile Command:
@@ -36,7 +36,6 @@ scons --project=lpc40xx_freertos --no-float-format --no-unit-test -j32
 
 This is the "simple" main control loop project setup just for CmpE30 which is a freshmen level class at San Jose State University. It re-uses all of the code from `lpc40xx_freertos` except that it has its own main function override.
 
-
 Build the project by using any of these commands:
 ```
 scons
@@ -52,8 +51,6 @@ Use this project to:
 
 * Learn FreeRTOS API
 * Experiment with multiple FreeRTOS tasks or queues
-
-
 ```
 # Compile
 scons --project=x86_freertos
@@ -65,7 +62,6 @@ _build_x86_freertos/./x86_freertos.exe
 ## x86_sandbox
 
 This is to compile a program on your host machine. For example, you can compile an executable that runs on your Mac or Linux machine (or maybe even windows?)
-
 ```
 # Compile
 scons --project=x86_sandbox
