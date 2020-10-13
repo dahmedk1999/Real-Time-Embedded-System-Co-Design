@@ -6,7 +6,7 @@ Setup and install should be super simple unless you have Windows, which is not s
 
 1. Install Python on Windows (Mac and Linux should already have that)
     * Skip this for Mac or Linux
-    * Follow [this guide](installs/README.md) for Windows install guide
+    * Follow [this guide](EmbeddedSystem/installs/README.md) for Windows install guide
 2. Open up a terminal window or command prompt, and install `scons`:
     * Type `pip install scons`
     * If any issues on Ubuntu(Linux), try `sudo apt install scons`
