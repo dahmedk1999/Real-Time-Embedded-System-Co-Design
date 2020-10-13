@@ -85,7 +85,7 @@ void led_task_part3(void *task_parameter) {
       gpio1__set_low(led->port, led->pin);
       vTaskDelay(500);
     } else {
-      puts("Timeout: No Switch press incation for 1000ms");
+      puts("Timeout: No Switch press indication for 1000ms");
     }
   }
 }
