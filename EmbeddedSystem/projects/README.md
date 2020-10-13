@@ -65,7 +65,7 @@ Improve an ADC driver, and use an existing PWM driver to design and implement an
    * Use FreeRTOS queues to communicate between ADC_Task and PWM_Task  
 * L3-Driver       [ADC Header](lab4/l3_drivers/adc.h)     [PWM Header](lab4/l3_drivers/pwm1.h).
 
-* L3-Driver       [ADC Source](lab4/l3_drivers/adc.c)     [PWM Source](lab4/l3_drivers/pwm1.c).
+* L3-Driver       [ADC Source](lab4/l3_drivers/sources/adc.c)     [PWM Source](lab4/l3_drivers/sources/pwm1.c).
 
 * L5-Application  [main](lab4/l5_application/main.c)
 ```
