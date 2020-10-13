@@ -72,10 +72,10 @@ Improve an ADC driver, and use an existing PWM driver to design and implement an
 * L5-Application  [main](lab4/l5_application/main.c)
 ```
 # Compile Command:
-scons --project=lab3
+scons --project=lab4
 
 # SJ2 Board Flash Command:
-python nxp-programmer/flash.py --input _build_lab3/lab3.bin
+python nxp-programmer/flash.py --input _build_lab4/lab4.bin
 ```
 
 ## Lab5: SPI Flash Interface
@@ -95,10 +95,35 @@ The objective is to learn how to create a thread-safe driver for Synchronous Ser
 * L5-Application  [main](lab5/l5_application/main.c)
 ```
 # Compile Command:
-scons --project=lab3
+scons --project=lab5
 
 # SJ2 Board Flash Command:
-python nxp-programmer/flash.py --input _build_lab3/lab3.bin
+python nxp-programmer/flash.py --input _build_lab5/lab5.bin
+```
+
+
+## Lab6: Universal Asynchronous Receiver-Transmitter (UART)  
+![image](https://user-images.githubusercontent.com/38081550/95844496-d41f1c80-0cfd-11eb-80f7-2fb2d33b2d91.png)
+
+### OBJECTIVE
+The objective is to learn how to create a thread-safe driver for Synchronous Serial Port and to communicate with an external SPI Flash device.
+1. UART Driver
+   * Develop the driver functionality.
+   * Learn how to communicate between two devices using UART.
+2. Reinforce old knowledges:
+   * Interrupts by setting up an interrupt on [receive](http://books.socialledge.com/link/90#bkmrk-to-learn-how-to-comm).
+   * FreeRTOS Queue and String manipulation. 
+ 
+* L3-Driver       [UART Header](lab6/l3_drivers/uart_lab.h)     
+
+* L3-Driver       [UART Source](lab6/l3_drivers/sources/uart_lab.c)     
+* L5-Application  [main](lab6/l5_application/main.c)
+```
+# Compile Command:
+scons --project=lab6
+
+# SJ2 Board Flash Command:
+python nxp-programmer/flash.py --input _build_lab6/lab6.bin
 ```
 ## lpc40xx_freertos
 * This the primary LPC40xx project with all of the sources
