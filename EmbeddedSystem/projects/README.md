@@ -132,7 +132,6 @@ python nxp-programmer/flash.py --input _build_lab6/lab6.bin
 ## Lab7: FreeRTOS Producer Consumer Tasks (Cooperative Context Switch)
 ![image](https://user-images.githubusercontent.com/38081550/95926339-e1292380-0d70-11eb-964f-f89f12682c9c.png)
 
-
 ### OBJECTIVE
 Queues' API can also perform context switches, but this is a type of Cooperative Context Switch
 1. How Tasks and Queues work
@@ -167,6 +166,16 @@ scons --project=lpc40xx_freertos --no-float-format --no-unit-test
 scons --project=lpc40xx_freertos --no-float-format --no-unit-test -j32
 
 ```
+
+
+
+
+
+
+
+
+
+
 
 ## x86_freertos
 This is the FreeRTOS "simulator" on your host machine. For example, you can run a program with multiple FreeRTOS tasks on your Mac or Linux machine (or maybe even windows?)
