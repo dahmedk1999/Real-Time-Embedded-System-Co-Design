@@ -4,15 +4,36 @@ This folder contains sample projects that you can build
 
 ![image](https://user-images.githubusercontent.com/38081550/95832812-ac28bc80-0cef-11eb-9eea-3b6b61dd5132.png)
 
+OBJECTIVE
+1. Manipulate microcontroller's registers in order to access and control physical pins.
+2. Use implemented driver to sense input signals and control LEDs.
+3. Use FreeRTOS binary semaphore to signal between tasks.
+
+* L3-Driver       [GPIO Header](lab2/l3_drivers/gpio_lab.h).
+
+* L3-Driver       [GPIO Source](lab2/l3_drivers/sources/gpio_lab.c).
+
+* L5-Application  [main](lab2/l5_application/main.c)
+```
+# Compile Command:
+scons --project=lab2
+
+# SJ2 Board Flash Command:
+python nxp-programmer/flash.py --input _build_lab2/lab2.bin
+```
+## Lab3: GPIO Interrupt 
+
+![image](https://user-images.githubusercontent.com/38081550/95832812-ac28bc80-0cef-11eb-9eea-3b6b61dd5132.png)
+
 Manipulate microcontroller's registers in order to access and control physical pins.
 Use implemented driver to sense input signals and control LEDs.
 Use FreeRTOS binary semaphore to signal between tasks.
 
-L3-Driver       [GPIO Header](lab2/l3_drivers/gpio_lab.h).
+* L3-Driver       [GPIO Header](lab2/l3_drivers/gpio_lab.h).
 
-L3-Driver       [GPIO Source](lab2/l3_drivers/sources/gpio_lab.c).
+* L3-Driver       [GPIO Source](lab2/l3_drivers/sources/gpio_lab.c).
 
-L5-Application  [main](lab2/l5_application/main.c)
+* L5-Application  [main](lab2/l5_application/main.c)
 ```
 # Compile Command:
 scons --project=lab2
