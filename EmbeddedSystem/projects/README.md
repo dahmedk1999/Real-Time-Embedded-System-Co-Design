@@ -1,4 +1,4 @@
-This folder contains sample projects that you can build
+# This folder contains sample projects that you can build
 
 ## Lab2: GPIO Driver 
 ![image](https://user-images.githubusercontent.com/38081550/95832812-ac28bc80-0cef-11eb-9eea-3b6b61dd5132.png)
