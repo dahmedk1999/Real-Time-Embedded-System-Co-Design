@@ -6,7 +6,7 @@ Setup and install should be super simple unless you have Windows, which is not s
 
 1. Install Python on Windows (Mac and Linux should already have that)
     * Skip this for Mac or Linux
-    * Follow [this guide](installs/README.md) for Windows install guide
+    * Follow [this guide](EmbeddedSystem/installs/README.md) for Windows install guide
 2. Open up a terminal window or command prompt, and install `scons`:
     * Type `pip install scons`
     * If any issues on Ubuntu(Linux), try `sudo apt install scons`
@@ -34,12 +34,12 @@ In order to run the unit-tests, `Ruby` and a `GCC compiler` is required for Mac 
 3. Invoke the python script to flash your new program
     * From the root of `sjtwo-c` folder, type: `python nxp-programmer/flash.py` and it might just work :)
     * The `flash.py` defaults to `lpc40xx_freertos.bin` file and auto detects your SJ2 serial port
-    * See [nxp-programmer README](nxp-programmer/README.md) and more examples in the following *Examples* section
+    * See [nxp-programmer README](EmbeddedSystem/nxp-programmer/README.md) and more examples in the following *Examples* section
 4. After flashing your new program, use your favorite serial terminal to watch the output from your board.
 
 ### SCons 
 
-Full documentation of the `SCons` command [is listed at this README](README-SCons.md). This should be read so you fully understand how to build various different projects and run the unit-tests.
+Full documentation of the `SCons` command [is listed at this README](SCons Tutorial.md). This should be read so you fully understand how to build various different projects and run the unit-tests.
 
 ### Typical Workflow
 
