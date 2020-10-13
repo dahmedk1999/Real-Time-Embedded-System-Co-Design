@@ -1,5 +1,15 @@
 This folder contains sample projects that you can build
 
+## Lab2: GPIOO Driver 
+
+```
+# Compile Command:
+scons --project=lab2
+
+# SJ2 Board Flash Command:
+python nxp-programmer/flash.py --input _build_lab2/lab2.bin
+```
+
 ## lpc40xx_freertos
 
 * This the primary LPC40xx project with all of the sources
