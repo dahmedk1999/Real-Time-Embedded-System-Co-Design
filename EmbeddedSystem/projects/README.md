@@ -129,7 +129,7 @@ python nxp-programmer/flash.py --input _build_lab6/lab6.bin
 ```
 
 
-## Lab7:   
+## Lab7: FreeRTOS Producer Consumer Tasks (Cooperative Context Switch)
 ![image](https://user-images.githubusercontent.com/38081550/95926339-e1292380-0d70-11eb-964f-f89f12682c9c.png)
 
 
