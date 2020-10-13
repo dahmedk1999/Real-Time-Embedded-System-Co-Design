@@ -127,12 +127,36 @@ scons --project=lab6
 # SJ2 Board Flash Command:
 python nxp-programmer/flash.py --input _build_lab6/lab6.bin
 ```
+
+
+## Lab7:   
+![image](https://user-images.githubusercontent.com/38081550/95926339-e1292380-0d70-11eb-964f-f89f12682c9c.png)
+
+
+### OBJECTIVE
+Queues' API can also perform context switches, but this is a type of Cooperative Context Switch
+1. How Tasks and Queues work
+   * xQueueSend()
+   * xQueueReceive()
+2. Assess how task priorities affect the RTOS Queue cooperative scheduling.
+3. An extra part on how to create [CLI command](http://books.socialledge.com/books/embedded-drivers-real-time-operating-systems/page/sj2-board#bkmrk-cli-commands) to control the Task
+     
+* L5-Application  [main](lab7/l5_application/main.c)
+```
+# Compile Command:
+scons --project=lab7
+
+# SJ2 Board Flash Command:
+python nxp-programmer/flash.py --input _build_lab7/lab7.bin
+```
+
+
 ## lpc40xx_freertos
 * This the primary LPC40xx project with all of the sources
 * This is the default project that gets compiled when you simply type `scons` without any arguments
 Build the project by using any of these commands:
 ```
-scons
+# scons
 scons --project=lpc40xx_freertos
 
 # Build without any printf/scanf of float (saves program flash space, and is faster to program)
@@ -146,8 +170,6 @@ scons --project=lpc40xx_freertos --no-float-format --no-unit-test -j32
 
 ## x86_freertos
 This is the FreeRTOS "simulator" on your host machine. For example, you can run a program with multiple FreeRTOS tasks on your Mac or Linux machine (or maybe even windows?)
-
-Use this project to:
 
 * Learn FreeRTOS API
 * Experiment with multiple FreeRTOS tasks or queues
