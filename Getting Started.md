@@ -39,7 +39,7 @@ In order to run the unit-tests, `Ruby` and a `GCC compiler` is required for Mac 
 
 ### SCons 
 
-Full documentation of the `SCons` command [is listed at this README](SCons Tutorial.md). This should be read so you fully understand how to build various different projects and run the unit-tests.
+Full documentation of the `SCons` command [is listed at this README](SCons-Tutorial.md). This should be read so you fully understand how to build various different projects and run the unit-tests.
 
 ### Typical Workflow
 
