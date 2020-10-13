@@ -34,12 +34,12 @@ In order to run the unit-tests, `Ruby` and a `GCC compiler` is required for Mac 
 3. Invoke the python script to flash your new program
     * From the root of `sjtwo-c` folder, type: `python nxp-programmer/flash.py` and it might just work :)
     * The `flash.py` defaults to `lpc40xx_freertos.bin` file and auto detects your SJ2 serial port
-    * See [nxp-programmer README](nxp-programmer/README.md) and more examples in the following *Examples* section
+    * See [nxp-programmer README](EmbeddedSystem/nxp-programmer/README.md) and more examples in the following *Examples* section
 4. After flashing your new program, use your favorite serial terminal to watch the output from your board.
 
 ### SCons 
 
-Full documentation of the `SCons` command [is listed at this README](README-SCons.md). This should be read so you fully understand how to build various different projects and run the unit-tests.
+Full documentation of the `SCons` command [is listed at this README](SCons Tutorial.md). This should be read so you fully understand how to build various different projects and run the unit-tests.
 
 ### Typical Workflow
 
