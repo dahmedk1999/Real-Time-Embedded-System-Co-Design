@@ -21,13 +21,11 @@
 #include "string.h"
 #include "uart_lab.h"
 
+#include "event_groups.h"
 #include "ff.h"
+
 /* -------------------------------------------------------------------------- */
-/* ------------------------------- Delcaration ------------------------------ */
-
-static QueueHandle_t sensor_queue;
-
-/* -------------------------- Write file to SD card ------------------------- */
+/* ---------------------- WRITE + READ (SD_CARD) Sample --------------------- */
 void write_file_using_fatfs_spi(void) {
   const char *filename = "ouput.txt";
   FIL file; // File handle
@@ -44,7 +42,6 @@ void write_file_using_fatfs_spi(void) {
   } else {
     printf("ERROR: Failed to open: %s\n", filename);
   }
-
   // char string2[64];
   // f_read(&file, &string2, strlen(string2), &bytes_written);
   // puts("after\n");
@@ -54,8 +51,10 @@ void write_file_using_fatfs_spi(void) {
 }
 
 /***************************************Queue Task (Part 1)*********************************
- *@brief: Checking the behavior of Queue Receive vs Queue Send in FreeRTOS
- *@Note:  Check it with different priority between Producer vs Consumer
+ *@brief: Getting data from Acceleration sensor
+          Find Avg of 100 Sample
+          Send it to Queue
+ *@Note:  Consumer and producer have the same priority
  ******************************************************************************************/
 typedef struct {
   acceleration__axis_data_s sample[100];
@@ -63,6 +62,16 @@ typedef struct {
   double avg_y;
 } data;
 
+static QueueHandle_t sensor_queue;
+EventGroupHandle_t WatchDog;
+TickType_t counting;
+TickType_t dog_counter1, dog_counter2;
+/* xEventGroupSetBits */
+uint8_t producer = 0x01, consumer = 0x02;
+/* xEventGroupWaitBits */
+uint8_t verified = 0x03;
+
+/* -------------------------------------------------------------------------- */
 /* ---------------------------------- SEND ---------------------------------- */
 static void producer_task(void *P) {
   /*Initialize sensor*/
@@ -75,25 +84,31 @@ static void producer_task(void *P) {
       data1.sum_y += data1.sample[i].y;
     }
     data1.avg_y = data1.sum_y / 100;
-    printf("EnQueue: %s\n", xQueueSend(sensor_queue, &data1.avg_y, 0) ? "1" : "0");
+    printf("EnQueue: %s\n", xQueueSend(sensor_queue, &data1.avg_y, 0) ? "T" : "F");
+    xEventGroupSetBits(WatchDog, producer);
     vTaskDelay(1000);
   }
 }
+
+/* -------------------------------------------------------------------------- */
 /* --------------------------------- RECEIVE -------------------------------- */
 static void consumer_task(void *P) {
+  /*  Create ptr *file_name + file object */
   const char *filename = "file.txt";
-  FIL file; // File handle
+  FIL file;
   UINT bytes_written = 0;
+  /* File Open IF exist file or Create IF NOT exist */
   FRESULT result = f_open(&file, filename, (FA_WRITE | FA_CREATE_ALWAYS));
   double receive;
   while (1) {
     if (xQueueReceive(sensor_queue, &receive, portMAX_DELAY)) {
       if (FR_OK == result) {
         static char string[64];
-        sprintf(string, "Avg: %f\n", receive);
+        /* Keep track Time execution */
+        counting = xTaskGetTickCount();
+        sprintf(string, "%ld - Avg: %f\n", counting, receive);
         if (FR_OK == f_write(&file, string, strlen(string), &bytes_written)) {
-
-          /* Save progress*/
+          /* Flush Cache + Save progress*/
           f_sync(&file);
           vTaskDelay(10);
         } else {
@@ -103,18 +118,79 @@ static void consumer_task(void *P) {
         printf("ERROR: Failed to open: %s\n", filename);
       }
     }
-    printf("Avg: %f\n", receive);
+    printf("%ld - Avg: %f\n", counting, receive);
+    xEventGroupSetBits(WatchDog, consumer);
   }
 }
 
-/* ------------------------------- Blink LED0 ------------------------------- */
-static void blink_task(void *P) {
-  gpio1__set_as_output(1, 18);
+/* -------------------------------------------------------------------------- */
+/* --------------------------------- VERIFY --------------------------------- */
+void Watchdog_task(void *P) {
+
+  /*  Create ptr *file_name + file object */
+  const char *filename1 = "watch_dog.txt";
+  FIL file;
+  UINT bytes_written = 0;
+  /* File Open IF exist file or Create IF NOT exist */
+  FRESULT result = f_open(&file, filename1, (FA_WRITE | FA_CREATE_ALWAYS));
+
   while (1) {
-    gpio1__set_high(1, 18);
-    vTaskDelay(250);
-    gpio1__set_low(1, 18);
-    vTaskDelay(250);
+    /* Set Clear + AND Gate logic for bit pattern - Wait for 1000ms */
+    uint8_t expected_value = xEventGroupWaitBits(WatchDog, verified, pdTRUE, pdTRUE, 2000); // 3
+    /* Expect_Value[0] = 0x3 --> Expect_Value[1++] = 0x00 */
+    printf("WatchDog verify: %s value:%d \n\n ", (expected_value == verified) ? "T" : "F", expected_value);
+
+    /* ---------------------------- BOTH TASK HEALTHY --------------------------- */
+    if ((expected_value == verified)) {
+      if (FR_OK == result) {
+        static char string[64];
+        dog_counter1 = xTaskGetTickCount();
+        sprintf(string, "Verified at time: %ld\n", dog_counter1);
+        if (FR_OK == f_write(&file, string, strlen(string), &bytes_written)) {
+          /* Flush Cache + Save progress*/
+          f_sync(&file);
+          // vTaskDelay(10);
+        } else {
+          printf("ERROR: Failed to write data to file\n");
+        }
+      } else {
+        printf("ERROR: Failed to open: %s\n", filename1);
+      }
+    }
+    /* ----------------------------- CONSUMER ERROR ----------------------------- */
+    else if (expected_value == 1) {
+      if (FR_OK == result) {
+        static char string[64];
+        dog_counter2 = xTaskGetTickCount();
+        sprintf(string, "Consumer Error at time: %ld\n ", dog_counter2);
+        if (FR_OK == f_write(&file, string, strlen(string), &bytes_written)) {
+          /* Flush Cache + Save progress*/
+          f_sync(&file);
+          // vTaskDelay(10);
+        } else {
+          printf("ERROR: Failed to write data to file\n");
+        }
+      } else {
+        printf("ERROR: Failed to open: %s\n", filename1);
+      }
+    }
+    /* ----------------------------- PRODUCER ERROR ----------------------------- */
+    else {
+      if (FR_OK == result) {
+        static char string[64];
+        dog_counter2 = xTaskGetTickCount();
+        sprintf(string, "Producer Error at time: %ld\n ", dog_counter2);
+        if (FR_OK == f_write(&file, string, strlen(string), &bytes_written)) {
+          /* Flush Cache + Save progress*/
+          f_sync(&file);
+          // vTaskDelay(10);
+        } else {
+          printf("ERROR: Failed to write data to file\n");
+        }
+      } else {
+        printf("ERROR: Failed to open: %s\n", filename1);
+      }
+    }
   }
 }
 
@@ -124,25 +200,14 @@ int main(void) {
 
   /* ----------------------------- Initialization ----------------------------- */
   puts("Starting RTOS\n");
-  // write_file_using_fatfs_spi();
-  /* ----------------------------- Priority: P = C ---------------------------- */
+  sj2_cli__init();
 
+  /* --------------------------- Written to SD card --------------------------- */
   sensor_queue = xQueueCreate(1, sizeof(double));
-
+  WatchDog = xEventGroupCreate();
   xTaskCreate(producer_task, "producer", 2048 / sizeof(void *), NULL, 2, NULL);
   xTaskCreate(consumer_task, "consumer", 2048 / sizeof(void *), NULL, 2, NULL);
-
-  /*******************************Explanation: OUTPUT******************************
-   * Since Two_Task have the same priority
-   * --> P_task or C_task will be start randomly
-   * ---> The output and sequence of operation will be based ond blocking time
-   * ----> In my output, producer run first
-   * -----> It will follow the logic or Part 1a
-   *********************************************************************************/
-
-  /* --------------------------------- Part 2 --------------------------------- */
-  // sj2_cli__init();
-  // xTaskCreate(producer_task, "xyz", 2048 / sizeof(void *), NULL, 2, NULL);
+  xTaskCreate(Watchdog_task, "Watchdog", 2048 / sizeof(void *), NULL, 3, NULL);
 
   vTaskStartScheduler(); // This function never returns unless RTOS scheduler runs out of memory and fails
 
