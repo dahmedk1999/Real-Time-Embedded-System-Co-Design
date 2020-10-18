@@ -54,7 +54,12 @@ void write_file_using_fatfs_spi(void) {
  *@brief: Getting data from Acceleration sensor
           Find Avg of 100 Sample
           Send it to Queue
- *@Note:  Consumer and producer have the same priority
+ *@Note:  Consumer and Producer have the same priority
+          -->xQueueSend (..,.., 0 ) + Sleep 1000mS
+          -->xQueueReceive(.., .., PortMax_Delay) + No Sleep
+
+          Consumer ---> Save Queue data to file.txt
+          WatchDog ---> Save LogInfo data to watch_dog.txt
  ******************************************************************************************/
 typedef struct {
   acceleration__axis_data_s sample[100];
@@ -63,9 +68,9 @@ typedef struct {
 } data;
 
 static QueueHandle_t sensor_queue;
-EventGroupHandle_t WatchDog;
-TickType_t counting;
-TickType_t dog_counter1, dog_counter2;
+static EventGroupHandle_t WatchDog;
+static TickType_t counting;
+static TickType_t dog_counter1, dog_counter2;
 /* xEventGroupSetBits */
 uint8_t producer = 0x01, consumer = 0x02;
 /* xEventGroupWaitBits */
@@ -106,11 +111,10 @@ static void consumer_task(void *P) {
         static char string[64];
         /* Keep track Time execution */
         counting = xTaskGetTickCount();
-        sprintf(string, "%ld - Avg: %f\n", counting, receive);
+        sprintf(string, "%ld mS <-> Avg: %.3f\n", counting, receive);
         if (FR_OK == f_write(&file, string, strlen(string), &bytes_written)) {
           /* Flush Cache + Save progress*/
           f_sync(&file);
-          vTaskDelay(10);
         } else {
           printf("ERROR: Failed to write data to file\n");
         }
@@ -118,7 +122,7 @@ static void consumer_task(void *P) {
         printf("ERROR: Failed to open: %s\n", filename);
       }
     }
-    printf("%ld - Avg: %f\n", counting, receive);
+    printf("%ld mS <-> Avg: %.3f\n", counting, receive);
     xEventGroupSetBits(WatchDog, consumer);
   }
 }
@@ -138,18 +142,18 @@ void Watchdog_task(void *P) {
     /* Set Clear + AND Gate logic for bit pattern - Wait for 1000ms */
     uint8_t expected_value = xEventGroupWaitBits(WatchDog, verified, pdTRUE, pdTRUE, 2000); // 3
     /* Expect_Value[0] = 0x3 --> Expect_Value[1++] = 0x00 */
-    printf("WatchDog verify: %s value:%d \n\n ", (expected_value == verified) ? "T" : "F", expected_value);
+    printf("WatchDog verify: %s\tReturn_Value: %d \n\n ", (expected_value == verified) ? "T" : "F", expected_value);
 
     /* ---------------------------- BOTH TASK HEALTHY --------------------------- */
     if ((expected_value == verified)) {
+      printf("Both Task Healthy\n");
       if (FR_OK == result) {
         static char string[64];
         dog_counter1 = xTaskGetTickCount();
-        sprintf(string, "Verified at time: %ld\n", dog_counter1);
+        sprintf(string, "Verified at time: %ldmS\n", dog_counter1);
         if (FR_OK == f_write(&file, string, strlen(string), &bytes_written)) {
           /* Flush Cache + Save progress*/
           f_sync(&file);
-          // vTaskDelay(10);
         } else {
           printf("ERROR: Failed to write data to file\n");
         }
@@ -159,14 +163,14 @@ void Watchdog_task(void *P) {
     }
     /* ----------------------------- CONSUMER ERROR ----------------------------- */
     else if (expected_value == 1) {
+      printf("C_Task Crash\n");
       if (FR_OK == result) {
         static char string[64];
         dog_counter2 = xTaskGetTickCount();
-        sprintf(string, "Consumer Error at time: %ld\n ", dog_counter2);
+        sprintf(string, "Consumer Error at time: %ldmS\n ", dog_counter2);
         if (FR_OK == f_write(&file, string, strlen(string), &bytes_written)) {
           /* Flush Cache + Save progress*/
           f_sync(&file);
-          // vTaskDelay(10);
         } else {
           printf("ERROR: Failed to write data to file\n");
         }
@@ -176,14 +180,14 @@ void Watchdog_task(void *P) {
     }
     /* ----------------------------- PRODUCER ERROR ----------------------------- */
     else {
+      printf("P_Task Crash\n");
       if (FR_OK == result) {
         static char string[64];
         dog_counter2 = xTaskGetTickCount();
-        sprintf(string, "Producer Error at time: %ld\n ", dog_counter2);
+        sprintf(string, "Producer Error at time: %ldmS\n ", dog_counter2);
         if (FR_OK == f_write(&file, string, strlen(string), &bytes_written)) {
           /* Flush Cache + Save progress*/
           f_sync(&file);
-          // vTaskDelay(10);
         } else {
           printf("ERROR: Failed to write data to file\n");
         }
