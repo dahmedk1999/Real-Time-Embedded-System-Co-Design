@@ -80,7 +80,7 @@ uint8_t verified = 0x03;
 /* ---------------------------------- SEND ---------------------------------- */
 static void producer_task(void *P) {
   /*Initialize sensor*/
-  fprintf(stderr, "Sensor Status: %s\n", acceleration__init() ? "Ready" : "Not Ready");
+  printf("Sensor Status: %s\n", acceleration__init() ? "Ready" : "Not Ready");
   data data1;
   while (1) {
 
@@ -142,11 +142,11 @@ void Watchdog_task(void *P) {
     /* Set Clear + AND Gate logic for bit pattern - Wait for 1000ms */
     uint8_t expected_value = xEventGroupWaitBits(WatchDog, verified, pdTRUE, pdTRUE, 2000); // 3
     /* Expect_Value[0] = 0x3 --> Expect_Value[1++] = 0x00 */
-    printf("WatchDog verify: %s\tReturn_Value: %d \n\n ", (expected_value == verified) ? "T" : "F", expected_value);
+    printf("WatchDog verify: %s\tReturn_Value: %d \n ", (expected_value == verified) ? "T" : "F", expected_value);
 
     /* ---------------------------- BOTH TASK HEALTHY --------------------------- */
     if ((expected_value == verified)) {
-      printf("Both Task Healthy\n");
+      printf("Both Task Healthy\n\n");
       if (FR_OK == result) {
         static char string[64];
         dog_counter1 = xTaskGetTickCount();
@@ -163,7 +163,7 @@ void Watchdog_task(void *P) {
     }
     /* ----------------------------- CONSUMER ERROR ----------------------------- */
     else if (expected_value == 1) {
-      printf("C_Task Crash\n");
+      printf("C_Task Crash\n\n");
       if (FR_OK == result) {
         static char string[64];
         dog_counter2 = xTaskGetTickCount();
@@ -180,7 +180,7 @@ void Watchdog_task(void *P) {
     }
     /* ----------------------------- PRODUCER ERROR ----------------------------- */
     else {
-      printf("P_Task Crash\n");
+      printf("P_Task Crash\n\n");
       if (FR_OK == result) {
         static char string[64];
         dog_counter2 = xTaskGetTickCount();

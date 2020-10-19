@@ -74,19 +74,22 @@ void char_array_table();
 /* Use Lookup Table to search char and Display */
 void display_char(char *string);
 
-void char_A(); // 1
+void char_A(); // 0
 void char_B();
 void char_C();
 void char_D();
-void char_E(); // 5
+void char_E(); 
 void char_F();
 void char_G();
-void char_H();
+void char_H(); // 7
 void char_I();
-void char_J(); // 10
+void char_J(); 
 void char_K();
 void char_L();
 void char_M();
 void char_N();
-void char_O(); // 15
-void char_P(); // 16
+void char_O(); 
+void char_P(); // 15
+
+
+
