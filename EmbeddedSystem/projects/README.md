@@ -151,6 +151,30 @@ python nxp-programmer/flash.py --input _build_lab7/lab7.bin
 ```
 
 
+## Lab8: Develop a Software Watchdog through FreeRTOS EventGroup API
+![image](https://user-images.githubusercontent.com/38081550/96640198-afb3d900-12d7-11eb-816f-acbb31fa531d.png)
+![image](https://user-images.githubusercontent.com/38081550/96641557-c3603f00-12d9-11eb-8942-e78d2708b47a.png)
+
+### OBJECTIVE
+xEventGroup APIs can be used to monitor a set of tasks. A software watchdog in an embedded system can make use of event groups for a group of tasks and notify/alert the user if any of the task misbehaves.
+1. Learn [File I/O](http://elm-chan.org/fsw/ff/00index_e.html) API to read and write data to the SD card
+2. Using Queue concepts to collect data from acceleration sensor and save it to .txt file.
+   * Producer --> xQueueSend()
+   * Consumer --> xQueueReceive()
+3. Designing a software check-in system to emulate a "Software Watchdog".
+   * Print a message when the Watchdog task is able to verify both tasks
+   * Print an error message clearly indicating which task failed to check-in (RTOS xEventGroups API)
+     
+* L5-Application  [main](lab8/l5_application/main.c)
+```
+# Compile Command:
+scons --project=lab8
+
+# SJ2 Board Flash Command:
+python nxp-programmer/flash.py --input _build_lab8/lab8.bin
+```
+
+
 ## lpc40xx_freertos
 * This the primary LPC40xx project with all of the sources
 * This is the default project that gets compiled when you simply type `scons` without any arguments
