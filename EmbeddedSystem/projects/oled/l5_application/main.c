@@ -37,10 +37,7 @@ int main(void) {
   // sj2_cli__init();
 
   /* --------------------------------- Part 1 --------------------------------- */
-
-  // turn_on_lcd();
-
-  oled_print("ZAQWSXCDERFVBGTyhnmjuik<>,.?/P[]}{)(*&^ $#@!1234567890");
+  oled_print("->CMPE146:RTOS<-");
 
   while (1) {
   }

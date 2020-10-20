@@ -100,7 +100,7 @@ void panel_init() {
 
   /*  charge pump enable  */
   oled__transfer_byte(0x8D); // OP-Code
-  oled__transfer_byte(0x14); // OP-Code
+  oled__transfer_byte(0x14);
 
   /*  Set segment remap 128 to 0  */
   oled__transfer_byte(0xA1);
@@ -143,7 +143,6 @@ void panel_init() {
           * SPI_oled Initial ( peripheral )
           * CS PIN (ON)
           * Initial all the Pixel with ( Fill + Clear )
-          *
 =============================================================================*/
 void turn_on_lcd() {
   config_oled_pin();
@@ -192,6 +191,7 @@ void oled_fill() {
     }
   }
 }
+
 /* -------------------------------------------------------------------------- */
 void oled_update() {
   horizontal_addr_mode();
@@ -208,23 +208,23 @@ void oled_update() {
 /* -------------------------------------------------------------------------- */
 /*========================= Horizontal Addressing Mode ========================
 *@brief:  Data will print horizontal direction
-*@Note:
+*@Note:   Please Check The Datasheet of Sequence of Operation
+          * Require command_bus (ON)
 ==============================================================================*/
-
 void horizontal_addr_mode() {
 
   oled_setC_bus();
   /*  Set address mode  */
-  oled__transfer_byte(0x20); // OP Code
+  oled__transfer_byte(0x20); // OP Code --> Address range []
   oled__transfer_byte(0x00);
 
   /*  Set column mode  */
-  oled__transfer_byte(0x21); // OP Code
+  oled__transfer_byte(0x21); // OP Code --> Address range []
   oled__transfer_byte(0x00);
   oled__transfer_byte(0x7F);
 
   /*  Set page address  */
-  oled__transfer_byte(0x22); // OP Code
+  oled__transfer_byte(0x22); // OP Code --> Address range []
   oled__transfer_byte(0x00);
   oled__transfer_byte(0x07);
 }
