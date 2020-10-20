@@ -292,6 +292,7 @@ void char_array_table() {
   char_callback[(int)'N'] = char_N;
   char_callback[(int)'O'] = char_O;
   char_callback[(int)'P'] = char_P;
+  
 }
 
 void char_A() {
@@ -465,6 +466,381 @@ void char_P() {
   oled__transfer_byte(0x09);
   oled__transfer_byte(0x09);
   oled__transfer_byte(0x06);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+
+void char_Q() {
+  oled__transfer_byte(0x3E);
+  oled__transfer_byte(0x41);
+  oled__transfer_byte(0x51);
+  oled__transfer_byte(0x21);
+  oled__transfer_byte(0x5E);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+
+void char_R() {
+  oled__transfer_byte(0x7F);
+  oled__transfer_byte(0x09);
+  oled__transfer_byte(0x19);
+  oled__transfer_byte(0x29);
+  oled__transfer_byte(0x46);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_S() {
+  oled__transfer_byte(0x26);
+  oled__transfer_byte(0x49);
+  oled__transfer_byte(0x49);
+  oled__transfer_byte(0x49);
+  oled__transfer_byte(0x32);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+
+void char_T() {
+  oled__transfer_byte(0x01);
+  oled__transfer_byte(0x01);
+  oled__transfer_byte(0x7F);
+  oled__transfer_byte(0x01);
+  oled__transfer_byte(0x01);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+
+void char_U() {
+  oled__transfer_byte(0x3F);
+  oled__transfer_byte(0x40);
+  oled__transfer_byte(0x40);
+  oled__transfer_byte(0x40);
+  oled__transfer_byte(0x3F);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+
+void char_V() {
+  oled__transfer_byte(0x1F);
+  oled__transfer_byte(0x20);
+  oled__transfer_byte(0x40);
+  oled__transfer_byte(0x20);
+  oled__transfer_byte(0x1F);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+
+void char_W() {
+  oled__transfer_byte(0x3F);
+  oled__transfer_byte(0x40);
+  oled__transfer_byte(0x38);
+  oled__transfer_byte(0x40);
+  oled__transfer_byte(0x3F);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+
+void char_X() {
+  oled__transfer_byte(0x63);
+  oled__transfer_byte(0x14);
+  oled__transfer_byte(0x08);
+  oled__transfer_byte(0x14);
+  oled__transfer_byte(0x63);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+
+void char_Y() {
+  oled__transfer_byte(0x07);
+  oled__transfer_byte(0x08);
+  oled__transfer_byte(0x70);
+  oled__transfer_byte(0x08);
+  oled__transfer_byte(0x07);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_Z() {
+  oled__transfer_byte(0x61);
+  oled__transfer_byte(0x51);
+  oled__transfer_byte(0x49);
+  oled__transfer_byte(0x45);
+  oled__transfer_byte(0x43);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+
+void char_a() {
+  oled__transfer_byte(0x20);
+  oled__transfer_byte(0x54);
+  oled__transfer_byte(0x54);
+  oled__transfer_byte(0x54);
+  oled__transfer_byte(0x78);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+
+void char_b() {
+  oled__transfer_byte(0x7F);
+  oled__transfer_byte(0x44);
+  oled__transfer_byte(0x44);
+  oled__transfer_byte(0x44);
+  oled__transfer_byte(0x38);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+
+void char_c() {
+  oled__transfer_byte(0x38);
+  oled__transfer_byte(0x44);
+  oled__transfer_byte(0x44);
+  oled__transfer_byte(0x44);
+  oled__transfer_byte(0x44);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+
+void char_d() {
+  oled__transfer_byte(0x38);
+  oled__transfer_byte(0x44);
+  oled__transfer_byte(0x44);
+  oled__transfer_byte(0x44);
+  oled__transfer_byte(0x7F);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_e() {
+  oled__transfer_byte(0x38);
+  oled__transfer_byte(0x54);
+  oled__transfer_byte(0x54);
+  oled__transfer_byte(0x54);
+  oled__transfer_byte(0x18);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+
+void char_f() {
+  oled__transfer_byte(0x08);
+  oled__transfer_byte(0x7E);
+  oled__transfer_byte(0x09);
+  oled__transfer_byte(0x01);
+  oled__transfer_byte(0x02);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+
+void char_g() {
+  oled__transfer_byte(0x18);
+  oled__transfer_byte(0xA4);
+  oled__transfer_byte(0xA4);
+  oled__transfer_byte(0xA4);
+  oled__transfer_byte(0x7C);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_h() {
+  oled__transfer_byte(0x7F);
+  oled__transfer_byte(0x08);
+  oled__transfer_byte(0x04);
+  oled__transfer_byte(0x04);
+  oled__transfer_byte(0x78);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_i() {
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x44);
+  oled__transfer_byte(0x7D);
+  oled__transfer_byte(0x40);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_j() {
+  oled__transfer_byte(0x40);
+  oled__transfer_byte(0x80);
+  oled__transfer_byte(0x80);
+  oled__transfer_byte(0x84);
+  oled__transfer_byte(0x7D);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_k() {
+  oled__transfer_byte(0x7F);
+  oled__transfer_byte(0x10);
+  oled__transfer_byte(0x28);
+  oled__transfer_byte(0x44);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_l() {
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x41);
+  oled__transfer_byte(0x7F);
+  oled__transfer_byte(0x40);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_m() {
+  oled__transfer_byte(0x7C);
+  oled__transfer_byte(0x04);
+  oled__transfer_byte(0x18);
+  oled__transfer_byte(0x04);
+  oled__transfer_byte(0x78);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_n() {
+  oled__transfer_byte(0x7C);
+  oled__transfer_byte(0x08);
+  oled__transfer_byte(0x04);
+  oled__transfer_byte(0x04);
+  oled__transfer_byte(0x78);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_o() {
+  oled__transfer_byte(0x38);
+  oled__transfer_byte(0x44);
+  oled__transfer_byte(0x44);
+  oled__transfer_byte(0x44);
+  oled__transfer_byte(0x38);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_p() {
+  oled__transfer_byte(0xFC);
+  oled__transfer_byte(0x24);
+  oled__transfer_byte(0x24);
+  oled__transfer_byte(0x24);
+  oled__transfer_byte(0x18);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_q() {
+  oled__transfer_byte(0x18);
+  oled__transfer_byte(0x24);
+  oled__transfer_byte(0x24);
+  oled__transfer_byte(0x28);
+  oled__transfer_byte(0xFC);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_r() {
+  oled__transfer_byte(0x7C);
+  oled__transfer_byte(0x08);
+  oled__transfer_byte(0x04);
+  oled__transfer_byte(0x04);
+  oled__transfer_byte(0x08);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_s() {
+  oled__transfer_byte(0x48);
+  oled__transfer_byte(0x54);
+  oled__transfer_byte(0x54);
+  oled__transfer_byte(0x54);
+  oled__transfer_byte(0x20);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_t() {
+  oled__transfer_byte(0x04);
+  oled__transfer_byte(0x3E);
+  oled__transfer_byte(0x44);
+  oled__transfer_byte(0x40);
+  oled__transfer_byte(0x20);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_u() {
+  oled__transfer_byte(0x3C);
+  oled__transfer_byte(0x40);
+  oled__transfer_byte(0x40);
+  oled__transfer_byte(0x20);
+  oled__transfer_byte(0x7C);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_v() {
+  oled__transfer_byte(0x1C);
+  oled__transfer_byte(0x20);
+  oled__transfer_byte(0x40);
+  oled__transfer_byte(0x20);
+  oled__transfer_byte(0x1C);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+
+void char_w() {
+  oled__transfer_byte(0x3c);
+  oled__transfer_byte(0x40);
+  oled__transfer_byte(0x30);
+  oled__transfer_byte(0x40);
+  oled__transfer_byte(0x3C);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_x() {
+  oled__transfer_byte(0x44);
+  oled__transfer_byte(0x28);
+  oled__transfer_byte(0x10);
+  oled__transfer_byte(0x28);
+  oled__transfer_byte(0x44);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_y() {
+  oled__transfer_byte(0x9C);
+  oled__transfer_byte(0xA0);
+  oled__transfer_byte(0xA0);
+  oled__transfer_byte(0xA0);
+  oled__transfer_byte(0x7C);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00);
+}
+void char_z() {
+  oled__transfer_byte(0x44);
+  oled__transfer_byte(0x64);
+  oled__transfer_byte(0x54);
+  oled__transfer_byte(0x4C);
+  oled__transfer_byte(0x44);
   oled__transfer_byte(0x00);
   oled__transfer_byte(0x00);
   oled__transfer_byte(0x00);

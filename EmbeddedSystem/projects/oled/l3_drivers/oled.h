@@ -78,18 +78,52 @@ void char_A(); // 0
 void char_B();
 void char_C();
 void char_D();
-void char_E(); 
+void char_E();
 void char_F();
 void char_G();
 void char_H(); // 7
 void char_I();
-void char_J(); 
+void char_J();
 void char_K();
 void char_L();
 void char_M();
 void char_N();
-void char_O(); 
+void char_O();
 void char_P(); // 15
-
-
-
+void char_Q();
+void char_R();
+void char_S();
+void char_T();
+void char_U();
+void char_V();
+void char_W();
+void char_X();
+void char_Y();
+void char_Z();
+/*-----------------------------------------------------------*/
+void char_a();
+void char_b();
+void char_c();
+void char_d();
+void char_e();
+void char_f();
+void char_g();
+void char_h();
+void char_i();
+void char_j();
+void char_k();
+void char_l();
+void char_m();
+void char_n();
+void char_o();
+void char_p();
+void char_q();
+void char_r();
+void char_s();
+void char_t();
+void char_u();
+void char_v();
+void char_w();
+void char_x();
+void char_y();
+void char_z();
