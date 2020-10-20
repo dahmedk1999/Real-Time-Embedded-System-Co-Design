@@ -39,7 +39,9 @@ int main(void) {
   /* --------------------------------- Part 1 --------------------------------- */
 
   // turn_on_lcd();
-  oled_print("ABCD");
+
+  oled_print("ZAQWSXCDERFVBGTyhnmjuik<>,.?/P[]}{)(*&^ $#@!1234567890");
+
   while (1) {
   }
 

@@ -31,7 +31,7 @@ void oled_setD_bus();
 void SPI_oled_initialization();
 
 /* Oled (SPI1) Transfer Byte  */
-uint8_t oled__transfer_byte(uint8_t data_transfer);
+void oled__transfer_byte(uint8_t data_transfer);
 
 /* Initialize the Sequence of OP-CODE for OLED */
 void panel_init();
@@ -53,6 +53,7 @@ void oled_update();
 
 /* -------------------------------------------------------------------------- */
 /* ------------------------------ Control Usage ----------------------------- */
+
 /* Horizontal Address Mode */
 void horizontal_addr_mode();
 
@@ -62,7 +63,7 @@ void oled_print(char *message);
 /* -------------------------------------------------------------------------- */
 /* --------------------------- LOOK UP char Array --------------------------- */
 
-/* Call Back Array for char*/
+/* Call Back Array for char */
 typedef void (*function_pointer_char)(void);
 
 /*
@@ -74,14 +75,15 @@ void char_array_table();
 /* Use Lookup Table to search char and Display */
 void display_char(char *string);
 
-void char_A(); // 0
+/* ----------------------------- Covert to Pixel ---------------------------- */
+void char_A();
 void char_B();
 void char_C();
 void char_D();
 void char_E();
 void char_F();
 void char_G();
-void char_H(); // 7
+void char_H();
 void char_I();
 void char_J();
 void char_K();
@@ -89,7 +91,7 @@ void char_L();
 void char_M();
 void char_N();
 void char_O();
-void char_P(); // 15
+void char_P();
 void char_Q();
 void char_R();
 void char_S();
@@ -127,3 +129,50 @@ void char_w();
 void char_x();
 void char_y();
 void char_z();
+
+/* --------------------------------- Number --------------------------------- */
+void char_0();
+void char_1();
+void char_2();
+void char_3();
+void char_4();
+void char_5();
+void char_6();
+void char_7();
+void char_8();
+void char_9();
+
+/* ------------------------------ Special Char ------------------------------ */
+void char_dquote();
+void char_squote();
+void char_comma();
+void char_qmark();
+void char_excl();
+void char_at();
+void char_undersc();
+void char_star();
+void char_hash();
+void char_percent();
+void char_amper();
+void char_parenthL();
+void char_parenthR();
+void char_plus();
+void char_minus();
+void char_div();
+void char_colon();
+void char_scolon();
+void char_less();
+void char_greater();
+void char_equal();
+void char_bracketL();
+void char_backslash();
+void char_bracketR();
+void char_caret();
+void char_bquote();
+void char_braceL();
+void char_braceR();
+void char_bar();
+void char_tilde();
+void char_space();
+void char_period();
+void char_dollar();
