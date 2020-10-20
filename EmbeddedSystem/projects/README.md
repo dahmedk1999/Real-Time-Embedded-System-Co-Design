@@ -179,12 +179,12 @@ python nxp-programmer/flash.py --input _build_lab8/lab8.bin
 ![image](https://user-images.githubusercontent.com/38081550/96647106-fc041680-12e1-11eb-9040-10024724c92c.png)
 ![image](https://user-images.githubusercontent.com/38081550/96643072-e7bd1b00-12db-11eb-8e9c-c9b6a657c082.png)
 
-###-IDEA BEHIND THIS PROJECT (Bang Nguyen - Danish Khan - Phuong Pham)
+### IDEA BEHIND THIS PROJECT (Bang Nguyen - Danish Khan - Phuong Pham)
 1. This is a part of a fully functional MP3 Music player project. 
 2. Practice the ability of developing Firmware base on using Datasheet only (without exist API from Arduino)
 3. We decided to develop our own working driver from scratch without using exist API as our side project.
 4. The driver is able to display 128 character from ASCII table 
-###-NOTE:
+### NOTE:
    The Code might not utilize and be efficiency enough to scale up.
    We just want to demonstrate the how this OLED module work in simplest way:
          *Setup the SPI peripheral from MCU
