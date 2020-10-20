@@ -92,6 +92,8 @@ static void producer_task(void *P) {
     data1.avg_y = data1.sum_y / 100;
     printf("EnQueue: %s\n", xQueueSend(sensor_queue, &data1.avg_y, 0) ? "T" : "F");
     xEventGroupSetBits(WatchDog, producer);
+    data1.sum_y = 0.000;
+
     vTaskDelay(1000);
   }
 }
@@ -166,7 +168,7 @@ void Watchdog_task(void *P) {
     }
     /* ----------------------------- CONSUMER ERROR ----------------------------- */
     else if (expected_value == 1) {
-      printf("C_Task Crash\n\n");
+      printf("C_Task Suspend\n\n");
 
       /* Save to .txt file  */
       if (FR_OK == result) {
@@ -185,7 +187,7 @@ void Watchdog_task(void *P) {
     }
     /* ----------------------------- PRODUCER ERROR ----------------------------- */
     else {
-      printf("P_Task Crash\n\n");
+      printf("P_Task Suspend\n\n");
 
       /* Save to .txt file  */
       if (FR_OK == result) {
