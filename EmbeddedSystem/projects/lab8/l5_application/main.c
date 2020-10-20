@@ -57,6 +57,7 @@ void write_file_using_fatfs_spi(void) {
  *@Note:  Consumer and Producer have the same priority
           -->xQueueSend (..,.., 0 ) + Sleep 1000mS
           -->xQueueReceive(.., .., PortMax_Delay) + No Sleep
+          -->WatchDog verify xEventGroupWaitBits(..,..,..,...,2000 ms)
 
           Consumer ---> Save Queue data to file.txt
           WatchDog ---> Save LogInfo data to watch_dog.txt
@@ -99,7 +100,7 @@ static void producer_task(void *P) {
 /* --------------------------------- RECEIVE -------------------------------- */
 static void consumer_task(void *P) {
   /*  Create ptr *file_name + file object */
-  const char *filename = "file.txt";
+  const char *filename = "Sensor.txt";
   FIL file;
   UINT bytes_written = 0;
   /* File Open IF exist file or Create IF NOT exist */
@@ -147,6 +148,8 @@ void Watchdog_task(void *P) {
     /* ---------------------------- BOTH TASK HEALTHY --------------------------- */
     if ((expected_value == verified)) {
       printf("Both Task Healthy\n\n");
+
+      /* Save to .txt file  */
       if (FR_OK == result) {
         static char string[64];
         dog_counter1 = xTaskGetTickCount();
@@ -164,6 +167,8 @@ void Watchdog_task(void *P) {
     /* ----------------------------- CONSUMER ERROR ----------------------------- */
     else if (expected_value == 1) {
       printf("C_Task Crash\n\n");
+
+      /* Save to .txt file  */
       if (FR_OK == result) {
         static char string[64];
         dog_counter2 = xTaskGetTickCount();
@@ -181,6 +186,8 @@ void Watchdog_task(void *P) {
     /* ----------------------------- PRODUCER ERROR ----------------------------- */
     else {
       printf("P_Task Crash\n\n");
+
+      /* Save to .txt file  */
       if (FR_OK == result) {
         static char string[64];
         dog_counter2 = xTaskGetTickCount();
@@ -213,7 +220,7 @@ int main(void) {
   xTaskCreate(consumer_task, "consumer", 2048 / sizeof(void *), NULL, 2, NULL);
   xTaskCreate(Watchdog_task, "Watchdog", 2048 / sizeof(void *), NULL, 3, NULL);
 
-  vTaskStartScheduler(); // This function never returns unless RTOS scheduler runs out of memory and fails
-
+  vTaskStartScheduler();
+  /* This function never returns unless RTOS scheduler runs out of memory and fails */
   return 0;
 }
