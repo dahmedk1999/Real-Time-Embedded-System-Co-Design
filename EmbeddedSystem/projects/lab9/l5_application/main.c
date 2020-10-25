@@ -216,11 +216,11 @@ int main(void) {
   sj2_cli__init();
 
   /* --------------------------- Written to SD card --------------------------- */
-  sensor_queue = xQueueCreate(1, sizeof(double));
-  WatchDog = xEventGroupCreate();
-  xTaskCreate(producer_task, "producer", 2048 / sizeof(void *), NULL, 2, NULL);
-  xTaskCreate(consumer_task, "consumer", 2048 / sizeof(void *), NULL, 2, NULL);
-  xTaskCreate(Watchdog_task, "Watchdog", 2048 / sizeof(void *), NULL, 3, NULL);
+  // sensor_queue = xQueueCreate(1, sizeof(double));
+  // WatchDog = xEventGroupCreate();
+  // xTaskCreate(producer_task, "producer", 2048 / sizeof(void *), NULL, 2, NULL);
+  // xTaskCreate(consumer_task, "consumer", 2048 / sizeof(void *), NULL, 2, NULL);
+  // xTaskCreate(Watchdog_task, "Watchdog", 2048 / sizeof(void *), NULL, 3, NULL);
 
   vTaskStartScheduler();
   /* This function never returns unless RTOS scheduler runs out of memory and fails */
