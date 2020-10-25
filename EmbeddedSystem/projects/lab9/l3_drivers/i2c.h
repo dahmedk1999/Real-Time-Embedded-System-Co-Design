@@ -1,14 +1,7 @@
 #pragma once
 
-#include "FreeRTOS.h"
-#include "semphr.h"
-#include "task.h"
 #include <stdbool.h>
 #include <stdint.h>
-
-#include "common_macros.h"
-#include "lpc40xx.h"
-#include "lpc_peripherals.h"
 
 /**
  * @file
