@@ -5,7 +5,9 @@
 #include "common_macros.h"
 #include "delay.h"
 #include "ff.h"
+#include "gpio.h"
 #include "i2c.h"
+#include "i2c_slave.h"
 #include "ssp2.h"
 #include "uart.h"
 
@@ -85,6 +87,9 @@ static void peripherals_init__uart0_init(void) {
 static void peripherals_init__i2c_init(void) {
   const uint32_t i2c_speed_hz = UINT32_C(400) * 1000;
   i2c__initialize(I2C__2, i2c_speed_hz, clock__get_peripheral_clock_hz());
+  /* -------------------------------------------------------------------------- */
+
+  /* -------------------------------------------------------------------------- */
 
   for (unsigned slave_address = 2; slave_address <= 254; slave_address += 2) {
     if (i2c__detect(I2C__2, slave_address)) {

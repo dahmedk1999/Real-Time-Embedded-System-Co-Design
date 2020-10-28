@@ -8,6 +8,9 @@
 #include "lpc40xx.h"
 #include "lpc_peripherals.h"
 
+#include "i2c_slave.h"
+#include <stdio.h>
+
 /// Set to non-zero to enable debugging, and then you can use I2C__DEBUG_PRINTF()
 #define I2C__ENABLE_DEBUGGING 0
 
@@ -44,6 +47,11 @@ typedef struct {
   uint8_t *input_byte_pointer;        ///< Used for reading I2C slave device
   const uint8_t *output_byte_pointer; ///< Used for writing data to the I2C slave device
   size_t number_of_bytes_to_transfer;
+
+  /* -------------------------------- Bang Code ------------------------------- */
+  /* Slave Receive Mode */
+  bool begin_receive;
+  uint8_t register_address;
 } i2c_s;
 
 /// Instances of structs for each I2C peripheral
@@ -150,6 +158,12 @@ void i2c__initialize(i2c_e i2c_number, uint32_t desired_i2c_bus_speed_in_hz, uin
 
   // Enable I2C and the interrupt for it
   lpc_i2c->CONSET = 0x40;
+
+  if (i2c_number == 0) {
+    lpc_i2c->CONSET = 0x44;
+    printf("I2c0 slave\n");
+  }
+
   lpc_peripheral__enable_interrupt(peripheral_id, isrs[i2c_number], i2c_structs[i2c_number].rtos_isr_trace_name);
 }
 
@@ -274,6 +288,19 @@ static bool i2c__handle_state_machine(i2c_s *i2c) {
     I2C__STATE_MR_SLAVE_READ_NACK = 0x48,
     I2C__STATE_MR_SLAVE_ACK_SENT = 0x50,
     I2C__STATE_MR_SLAVE_NACK_SENT = 0x58,
+
+    /* -------------------------------- Bang Code ------------------------------- */
+    /* Slave Receive States (SR) */
+    I2C__STATE_SR_SLAVE_READ_ACK = 0x60,
+    I2C__STATE_SR_SLAVE_ACK_SENT = 0x80,
+    I2C__STATE_SR_SLAVE_NACK_SENT = 0xA0,
+
+    /* Slave Transmitter States (ST) */
+    I2C__STATE_ST_SLAVE_READ_ACK = 0xA8,
+    I2C__STATE_ST_SLAVE_READ_NACK = 0xB8,
+    I2C__STATE_ST_SLAVE_ACK_SENT = 0xC8,
+    I2C__STATE_ST_SLAVE_NACK_SENT = 0xC0,
+
   };
 
   bool stop_sent = false;
@@ -380,6 +407,50 @@ static bool i2c__handle_state_machine(i2c_s *i2c) {
     // We should not issue stop() in this condition, but we still need to end our  transaction.
     stop_sent = true;
     i2c->error_code = lpc_i2c->STAT;
+    break;
+
+  /* -------------------------------- Bang Code ------------------------------- */
+  case I2C__STATE_SR_SLAVE_READ_ACK:
+    i2c->begin_receive = true;
+    i2c__set_ack_flag(lpc_i2c);
+    i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
+    break;
+  case I2C__STATE_SR_SLAVE_ACK_SENT:
+    if (i2c->begin_receive) {
+      i2c->register_address = lpc_i2c->DAT;
+      i2c->begin_receive = false;
+    } else {
+      if (i2c_slave_callback__write_memory(i2c->register_address++, lpc_i2c->DAT)) {
+
+      } else {
+        printf("Error at STATE 0x80\n");
+      }
+    }
+    i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
+    break;
+  case I2C__STATE_SR_SLAVE_NACK_SENT:
+    i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
+    break;
+  case I2C__STATE_ST_SLAVE_READ_ACK:
+    if (i2c_slave_callback__read_memory(i2c->register_address++, &lpc_i2c->DAT)) {
+
+    } else {
+      printf("Error at STATE 0xA8\n");
+    }
+    i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
+    break;
+  case I2C__STATE_ST_SLAVE_READ_NACK:
+    if (i2c_slave_callback__read_memory(i2c->register_address++, &lpc_i2c->DAT)) {
+
+    } else {
+      printf("Error at STATE 0xB8\n");
+    }
+    i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
+    break;
+  case I2C__STATE_ST_SLAVE_NACK_SENT:
+    i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
+  case I2C__STATE_ST_SLAVE_ACK_SENT:
+    i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
     break;
 
   case I2C__STATE_MT_SLAVE_ADDR_NACK: // no break
