@@ -1,10 +1,10 @@
 #include "i2c_slave.h"
 
-void i2c2__slave_init(uint8_t assign_slave_add) {
+void i2c1__slave_init(uint8_t assign_slave_add) {
   /* Address register slave mode */
-  LPC_I2C0->ADR0 |= (assign_slave_add << 0);
+  LPC_I2C1->ADR0 |= (assign_slave_add << 0);
   /*Enable Slave I2EN = 1 AA = 1 (0b1000100) */
-  LPC_I2C0->CONSET = 0x44;
+  LPC_I2C1->CONSET = 0x44;
 }
 
 /**

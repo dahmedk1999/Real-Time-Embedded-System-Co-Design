@@ -50,26 +50,24 @@ bool acc_checking(void) {
   return (0x2A == i2c__read_single(I2C__2, Slave_address, Id_Register));
 }
 
-void i2c0_init(void) {
+void i2c1_init(void) {
   /*I/O con Pin config */
-  // lpc_peripheral__turn_on_power_to(LPC_PERIPHERAL__I2C0);
-  // LPC_I2C0->CONCLR = 0x6C; // Clear ALL I2C Flags
-  LPC_IOCON->P1_31 |= (1 << 10);
-  LPC_IOCON->P1_30 |= (1 << 10);
-  gpio__construct_with_function(1, 30, 4);
-  gpio__construct_with_function(1, 31, 4);
 
-  i2c__initialize(I2C__0, i2c_speed_hz, clock__get_peripheral_clock_hz());
-  // lpc_i2c->CONSET = 0x40;
+  LPC_IOCON->P0_1 |= (1 << 10);
+  LPC_IOCON->P0_0 |= (1 << 10);
+  gpio__construct_with_function(0, 0, 3); // SDA
+  gpio__construct_with_function(0, 1, 3); // SCLK
+
+  i2c__initialize(I2C__1, i2c_speed_hz, clock__get_peripheral_clock_hz());
   puts("done0");
-  i2c2__slave_init(0x86);
+  i2c1__slave_init(0x86);
   puts("done1");
   for (unsigned slave_address = 2; slave_address <= 254; slave_address += 2) {
     if (i2c__detect(I2C__2, slave_address)) {
       printf("I2C slave detected at address: 0x%02X\n", slave_address);
     }
   }
-  puts("done3");
+  puts("done2");
 
   printf("Status: %s\n", i2c__detect(I2C__2, 0x86) ? "Yes" : "NO");
 }
@@ -110,7 +108,7 @@ int main(void) {
   /* ----------------------------- Initialization ----------------------------- */
   puts("Starting RTOS\n");
   sj2_cli__init();
-  i2c0_init();
+  i2c1_init();
 
   // printf("Acceleration Status: %s\n", acc_checking() ? "Ready" : "Not Ready");
 
