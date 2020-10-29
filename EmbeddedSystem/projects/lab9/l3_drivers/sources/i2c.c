@@ -158,12 +158,6 @@ void i2c__initialize(i2c_e i2c_number, uint32_t desired_i2c_bus_speed_in_hz, uin
 
   // Enable I2C and the interrupt for it
   lpc_i2c->CONSET = 0x40;
-
-  if (i2c_number == 0) {
-    lpc_i2c->CONSET = 0x44;
-    printf("I2c0 slave\n");
-  }
-
   lpc_peripheral__enable_interrupt(peripheral_id, isrs[i2c_number], i2c_structs[i2c_number].rtos_isr_trace_name);
 }
 
