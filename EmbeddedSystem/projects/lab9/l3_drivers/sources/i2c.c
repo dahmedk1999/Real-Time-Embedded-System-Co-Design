@@ -49,9 +49,9 @@ typedef struct {
   size_t number_of_bytes_to_transfer;
 
   /* -------------------------------- Bang Code ------------------------------- */
-  /* Slave Receive Mode */
-  bool begin_receive;
-  uint8_t register_address;
+  /* Slave  Mode */
+  bool begin_receive;       // First Byte condition
+  uint8_t register_address; // also Data byte
 } i2c_s;
 
 /// Instances of structs for each I2C peripheral
@@ -410,17 +410,22 @@ static bool i2c__handle_state_machine(i2c_s *i2c) {
     break;
 
   /* -------------------------------- Bang Code ------------------------------- */
-  case I2C__STATE_SR_SLAVE_READ_ACK:
+  /* -------------------------------------------------------------------------- */
+
+  /* |S|SLA + W|A| */
+  case I2C__STATE_SR_SLAVE_READ_ACK: // 0x60
     i2c->begin_receive = true;
     i2c__set_ack_flag(lpc_i2c);
     i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
     break;
-  case I2C__STATE_SR_SLAVE_ACK_SENT:
+
+  /* |S|SLA+W|A|Data|A| */
+  case I2C__STATE_SR_SLAVE_ACK_SENT: // 0x80
     if (i2c->begin_receive) {
       i2c->register_address = lpc_i2c->DAT;
       i2c->begin_receive = false;
     } else {
-      if (i2c_slave_callback__write_memory(i2c->register_address++, lpc_i2c->DAT)) {
+      if (i2c_slave_receive__write_memory(i2c->register_address++, lpc_i2c->DAT)) {
 
       } else {
         printf("Error at STATE 0x80\n");
@@ -428,28 +433,37 @@ static bool i2c__handle_state_machine(i2c_s *i2c) {
     }
     i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
     break;
-  case I2C__STATE_SR_SLAVE_NACK_SENT:
+
+  /* (STO | STA) SENT */
+  case I2C__STATE_SR_SLAVE_NACK_SENT: // 0xA0 (STO | STA)
     i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
     break;
-  case I2C__STATE_ST_SLAVE_READ_ACK:
-    if (i2c_slave_callback__read_memory(i2c->register_address++, &lpc_i2c->DAT)) {
+
+  /* |S|SLA + R|A| */
+  case I2C__STATE_ST_SLAVE_READ_ACK: // 0xA8
+    if (i2c_slave_transmit__read_memory(i2c->register_address++, &lpc_i2c->DAT)) {
 
     } else {
       printf("Error at STATE 0xA8\n");
     }
     i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
     break;
-  case I2C__STATE_ST_SLAVE_READ_NACK:
-    if (i2c_slave_callback__read_memory(i2c->register_address++, &lpc_i2c->DAT)) {
+
+  /* |S|SLA+R|A|Data|A| */
+  case I2C__STATE_ST_SLAVE_READ_NACK: // 0xB8
+    if (i2c_slave_transmit__read_memory(i2c->register_address++, &lpc_i2c->DAT)) {
 
     } else {
       printf("Error at STATE 0xB8\n");
     }
     i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
     break;
-  case I2C__STATE_ST_SLAVE_NACK_SENT:
+
+  /* Data transmit --> NACK return */
+  case I2C__STATE_ST_SLAVE_NACK_SENT: // Nack -> 0xC0
     i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
-  case I2C__STATE_ST_SLAVE_ACK_SENT:
+  /* Last Byte sent*/
+  case I2C__STATE_ST_SLAVE_ACK_SENT: // LastByte -> 0xC8
     i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
     break;
 

@@ -40,7 +40,6 @@ const uint8_t Id_Register = 0x0D;
 
 /* ----------------------------- Configuration ----------------------------- */
 const uint8_t Speed_100hz = (1 << 0) | (3 << 3);
-const uint32_t p_clock = 96 * 000 * 000;
 
 /* -------------------------------- Function -------------------------------- */
 bool acc_checking(void) {
@@ -50,27 +49,6 @@ bool acc_checking(void) {
   return (0x2A == i2c__read_single(I2C__2, Slave_address, Id_Register));
 }
 
-void i2c1_init(void) {
-  /*I/O con Pin config */
-
-  LPC_IOCON->P0_1 |= (1 << 10);
-  LPC_IOCON->P0_0 |= (1 << 10);
-  gpio__construct_with_function(0, 0, 3); // SDA
-  gpio__construct_with_function(0, 1, 3); // SCLK
-
-  i2c__initialize(I2C__1, i2c_speed_hz, clock__get_peripheral_clock_hz());
-  puts("done0");
-  i2c1__slave_init(0x86);
-  puts("done1");
-  for (unsigned slave_address = 2; slave_address <= 254; slave_address += 2) {
-    if (i2c__detect(I2C__2, slave_address)) {
-      printf("I2C slave detected at address: 0x%02X\n", slave_address);
-    }
-  }
-  puts("done2");
-
-  printf("Status: %s\n", i2c__detect(I2C__2, 0x86) ? "Yes" : "NO");
-}
 /* -------------------------------------------------------------------------- */
 axis_3d Get_XYZ_data(void) {
   if (acc_checking) {
@@ -101,23 +79,16 @@ void Task_XZ(void *P) {
   }
 }
 
-/***************************************** MAIN LOOP *********************************************
-**************************************************************************************************/
+/******************************** MAIN LOOP **********************************
+******************************************************************************/
 int main(void) {
 
   /* ----------------------------- Initialization ----------------------------- */
   puts("Starting RTOS\n");
   sj2_cli__init();
-  i2c1_init();
+  i2c1__slave_init(0x86);
 
-  // printf("Acceleration Status: %s\n", acc_checking() ? "Ready" : "Not Ready");
-
-  /* --------------------------- Written to SD card --------------------------- */
-  // sensor_queue = xQueueCreate(1, sizeof(double));
-  // WatchDog = xEventGroupCreate();
   // xTaskCreate(Task_XZ, "XZ Position", 2048 / sizeof(void *), NULL, 1, NULL);
-  // xTaskCreate(consumer_task, "consumer", 2048 / sizeof(void *), NULL, 2, NULL);
-  // xTaskCreate(Watchdog_task, "Watchdog", 2048 / sizeof(void *), NULL, 3, NULL);
 
   vTaskStartScheduler();
   /* This function never returns unless RTOS scheduler runs out of memory and fails */
