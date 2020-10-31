@@ -50,8 +50,8 @@ typedef struct {
 
   /* -------------------------------- Bang Code ------------------------------- */
   /* Slave  Mode */
-  bool begin_receive;       // First Byte condition
-  uint8_t register_address; // also Data byte
+  bool FirstByte_afterSLA;     // First Byte condition
+  uint8_t Slave_memoryAddress; // also Data byte
 } i2c_s;
 
 /// Instances of structs for each I2C peripheral
@@ -408,21 +408,21 @@ static bool i2c__handle_state_machine(i2c_s *i2c) {
 
   /* |S|SLA + W|A| */
   case I2C__STATE_SR_SLAVE_READ_ACK: // 0x60
-    i2c->begin_receive = true;
+    i2c->FirstByte_afterSLA = true;
     i2c__set_ack_flag(lpc_i2c);
     i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
     break;
 
   /* |S|SLA+W|A|Data|A| */
   case I2C__STATE_SR_SLAVE_ACK_SENT: // 0x80
-    if (i2c->begin_receive) {
-      i2c->register_address = lpc_i2c->DAT;
-      i2c->begin_receive = false;
+    if (i2c->FirstByte_afterSLA) {
+      i2c->Slave_memoryAddress = lpc_i2c->DAT;
+      i2c->FirstByte_afterSLA = false;
     } else {
-      if (i2c_slave_receive__write_memory(i2c->register_address++, lpc_i2c->DAT)) {
+      if (i2c_slave_receive__write_memory(i2c->Slave_memoryAddress++, lpc_i2c->DAT)) {
 
       } else {
-        printf("Error at STATE 0x80\n");
+        printf("STATE 0x80 error\n");
       }
     }
     i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
@@ -435,20 +435,20 @@ static bool i2c__handle_state_machine(i2c_s *i2c) {
 
   /* |S|SLA + R|A| */
   case I2C__STATE_ST_SLAVE_READ_ACK: // 0xA8
-    if (i2c_slave_transmit__read_memory(i2c->register_address++, &lpc_i2c->DAT)) {
+    if (i2c_slave_transmit__read_memory(i2c->Slave_memoryAddress++, &lpc_i2c->DAT)) {
 
     } else {
-      printf("Error at STATE 0xA8\n");
+      printf("STATE 0xA8 error\n");
     }
     i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
     break;
 
   /* |S|SLA+R|A|Data|A| */
   case I2C__STATE_ST_SLAVE_READ_NACK: // 0xB8
-    if (i2c_slave_transmit__read_memory(i2c->register_address++, &lpc_i2c->DAT)) {
+    if (i2c_slave_transmit__read_memory(i2c->Slave_memoryAddress++, &lpc_i2c->DAT)) {
 
     } else {
-      printf("Error at STATE 0xB8\n");
+      printf("STATE 0xB8 error\n");
     }
     i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
     break;
