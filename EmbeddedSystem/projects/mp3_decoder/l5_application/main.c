@@ -18,6 +18,7 @@
 #include "task.h"
 #include <stdio.h>
 
+#include "decoder_mp3.h"
 #include "string.h"
 #include "uart_lab.h"
 
@@ -34,6 +35,7 @@ int main(void) {
 
   /* ----------------------------- Initialization ----------------------------- */
   puts("Starting RTOS\n");
+  decoder_setup();
   // sj2_cli__init();
 
   /* --------------------------------- Part 1 --------------------------------- */
