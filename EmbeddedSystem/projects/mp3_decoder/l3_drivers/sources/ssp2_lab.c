@@ -5,7 +5,7 @@
 *@para:   max_clock_mhz (in)
 *@return: No return
 *@Note:   Power On            ( LPC_SC->PCONP )
-          Setup Crontrol Reg  ( LPC_SSP2->CR0 or CR1 )
+          Setup Control Reg  ( LPC_SSP2->CR0 or CR1 )
           Setup Prescalar     ( LPC_SSP2->CPSR )
 ======================================================================================================*/
 void ssp2__setup(uint32_t max_clock_mhz) {

@@ -114,11 +114,11 @@ void decoder_setup() {
   // set volume
   decoder_write_register(SCI_VOL, 25, 25);
 
-  //   // set bass
-  //   setBassLevel(1);
+  // set bass
+  set_BassLevel(1);
 
-  //   // set treble
-  //   setTrebleLevel(1);
+  // set treble
+  set_TrebleLevel(1);
 
   /* --------------------- Decoder Version + MODE + CLOCK */
   uint16_t MP3Status = decoder_read_register(SCI_STATUS);
@@ -196,4 +196,63 @@ void decoder_send_mp3Data(uint8_t data) {
   set_XDCS_LowActive();            // Select
   decoder_ssp0_transferByte(data); // Send SPI Data
   set_XDCS_HighActive();           // Deselect
+}
+
+/* -------------------------- Bass Effect function -------------------------- */
+void set_Bass(uint8_t amplitude, uint8_t frequency) {
+  /* Amplitude + Frequency Boundary */
+  if ((amplitude <= 15) && (frequency >= 2) && (frequency <= 15)) {
+    /* SCI_BASS(W/R)---Amp[7:4]-Freq[3:0]--BassEffect */
+    uint8_t setup_Bass = ((amplitude << 4) | (frequency << 0));
+    uint16_t current_Bass = decoder_read_register(SCI_BASS);
+    decoder_write_register(SCI_BASS, (current_Bass >> 8), setup_Bass);
+  }
+}
+
+void set_BassLevel(uint8_t level) {
+  switch (level) {
+  case 1:
+    set_Bass(3, 6);
+    break;
+  case 2:
+    set_Bass(6, 6);
+  case 3:
+    set_Bass(9, 6);
+  case 4:
+    set_Bass(12, 6);
+  case 5:
+    set_Bass(15, 6);
+  default:
+    set_Bass(0, 6);
+    break;
+  }
+}
+
+/* ------------------------- Treble Effect Function ------------------------- */
+void set_Treble(int8_t amplitude, uint8_t frequency) {
+  if (((amplitude >= -8) && (amplitude <= 7)) && ((frequency >= 1) && (frequency <= 15))) {
+    /* SCI_BASS(W/R)---Amp[15:12]-Freq[11:8]--BassEffect */
+    uint8_t setup_Treble = ((amplitude << 12) | (frequency << 8));
+    uint16_t current_Treble = decoder_read_register(SCI_BASS);
+    decoder_write_register(SCI_BASS, setup_Treble, (current_Treble & 0xff));
+  }
+}
+
+void set_TrebleLevel(uint8_t level) {
+  switch (level) {
+  case 1:
+    set_Treble(-5, 5);
+    break;
+  case 2:
+    set_Treble(-2, 5);
+  case 3:
+    set_Treble(1, 5);
+  case 4:
+    set_Treble(4, 5);
+  case 5:
+    set_Treble(7, 5);
+  default:
+    set_Treble(0, 5);
+    break;
+  }
 }
