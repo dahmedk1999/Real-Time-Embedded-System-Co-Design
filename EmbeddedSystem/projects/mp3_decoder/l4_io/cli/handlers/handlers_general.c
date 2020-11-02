@@ -141,6 +141,10 @@ app_cli_status_e cli__bang_handler(app_cli__argument_t argument, sl_string_t use
   return APP_CLI_STATUS__SUCCESS;
 }
 
+/* -------------------------------------------------------------------------- */
+/* --------------------------- CLI for MP3 Project -------------------------- */
+/* -------------------------------------------------------------------------- */
+
 extern QueueHandle_t Q_trackname;
 app_cli_status_e cli__mp3_play(app_cli__argument_t argument, sl_string_t user_input_minus_command_name,
                                app_cli__print_string_function cli_output) {
@@ -152,9 +156,9 @@ app_cli_status_e cli__mp3_play(app_cli__argument_t argument, sl_string_t user_in
   if (sl_string__get_length(user_input_minus_command_name) < 63) {
     strncpy(trackname, user_input_minus_command_name, 64);
     xQueueSend(Q_trackname, trackname, portMAX_DELAY);
-    printf("Sent %s over to the Q_songname\n", user_input_minus_command_name);
+    printf("Sent %s  to the Q_trackname(Reader_T)\n", user_input_minus_command_name);
   } else {
-    printf("Error: please enter in a song name less than 64 characters \n");
+    printf("Error: Song name is over 64 characters \n");
   }
   return APP_CLI_STATUS__SUCCESS;
 }

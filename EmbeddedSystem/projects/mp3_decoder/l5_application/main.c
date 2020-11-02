@@ -28,50 +28,59 @@ QueueHandle_t Q_songdata;
 QueueHandle_t Q_trackname;
 TaskHandle_t player_handle;
 
+/********************************* MP3 READER Task (Part 1) *******************************
+ *@brief: Receive song_name(Queue track_name) <--CLI input <handler_general.c>
+          Open file = song_name
+          Read file --> Store in buffer[size512]
+          Send it to player_task(Queue songdata)
+          Close file
+ *@note:  There are two Queues involved
+          ---> QueueHandle_t Q_trackname;
+          ---> QueueHandle_t Q_songdata;
+          All use PortMax_delay to sleep and wait to wakeup
+ ******************************************************************************************/
 void mp3_reader_task(void *p) {
-  trackname_t name;
-  char bytes_512[512];
+  trackname_t song_name;
+  char TX_buffer512[512];
   UINT br;
   while (1) {
-    xQueueReceive(Q_trackname, name, portMAX_DELAY);
-    // printf("Received song to play: %s\n", name);
-
-    // open file
-    const char *filename = name; // check if accurate
-    FIL file;
-    FRESULT result = f_open(&file, filename, (FA_READ));
+    xQueueReceive(Q_trackname, song_name, portMAX_DELAY);
+    oled_print(song_name); // Test it on the Oled Screen
+    const char *file_name = song_name;
+    FIL object_file;
+    FRESULT result = f_open(&object_file, file_name, (FA_READ));
     if (FR_OK == result) {
       while (br != 0) {
-        // read 512 bytes from file to bytes_512
-        f_read(&file, bytes_512, sizeof(bytes_512), &br);
-        xQueueSend(Q_songdata, bytes_512, portMAX_DELAY);
-
-        if (uxQueueMessagesWaiting(Q_trackname)) {
-          // printf("New play song request\n");
-          break;
-        }
+        /* Read-->Store Data (object_file --> buffer) */
+        f_read(&object_file, TX_buffer512, sizeof(TX_buffer512), &br);
+        xQueueSend(Q_songdata, TX_buffer512, portMAX_DELAY);
+        /* New Song request ???*/
       }
-      // close file
-      f_close(&file);
+      f_close(&object_file);
     } else {
-      // printf("Failed to open mp3 file \n");
+      printf("Failed to open mp3 object_file \n");
     }
   }
 }
-
+/********************************* MP3 Player Task (Part 1) *******************************
+ *@brief: Receive reader_task(Queue song_data)
+          Send every singple byte from buffer to Decoder
+ *@note:  Need to wait for Data Request pin (DREQ_HighActive)
+ ******************************************************************************************/
 void mp3_player_task(void *p) {
   int counter = 1;
   while (1) {
-    char bytes_512[512];
-    xQueueReceive(Q_songdata, bytes_512, portMAX_DELAY);
+    char RX_buffer512[512];
+    xQueueReceive(Q_songdata, RX_buffer512, portMAX_DELAY);
     for (int i = 0; i < 512; i++) {
-      // printf("%x \t", bytes_512[i]);
-      while (!gpio1__get_level(2, 0)) {
+      /* Data Request (Activated) */
+      while (!get_DREQ_HighActive()) {
         vTaskDelay(1);
       }
-      decoder_send_mp3Data(bytes_512[i]);
+      decoder_send_mp3Data(RX_buffer512[i]);
+      // printf("%x \t", RX_buffer512[i]);
     }
-    // printf("Received 512 bytes : %d\n", counter);
+    // printf("Buffer Transmit: %d (times)\n", counter);
     counter++;
   }
 }
@@ -79,19 +88,14 @@ void mp3_player_task(void *p) {
 int main(void) {
 
   Q_trackname = xQueueCreate(1, sizeof(trackname_t));
-  /* Send 512 byte at once */
+  /* Send 512-bytes at once */
   Q_songdata = xQueueCreate(1, 512);
 
-  // enable GPIO interrupt
-  // init_SPI();
-  // mp3_setup();
   decoder_setup();
-
   sj2_cli__init();
 
-  xTaskCreate(mp3_reader_task, "reader", (2024 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
-  xTaskCreate(mp3_player_task, "player", (3096 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM,
-              &player_handle); // made a change here
+  xTaskCreate(mp3_reader_task, "task_reader", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
+  xTaskCreate(mp3_player_task, "task_player", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, &player_handle);
 
   vTaskStartScheduler();
   return 0;

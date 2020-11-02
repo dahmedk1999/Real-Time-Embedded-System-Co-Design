@@ -8,26 +8,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-// VS10xx SCI Registers
-// uint16_t SCI_MODE = 0x00;
-// uint16_t SCI_STATUS = 0x01;
-// uint16_t SCI_BASS = 0x02;
-// uint16_t SCI_CLOCKF = 0x03;
-// uint16_t SCI_DECODE_TIME = 0x04;
-// uint16_t SCI_AUDATA = 0x05;
-// uint16_t SCI_WRAM = 0x06;
-// uint16_t SCI_WRAMADDR = 0x07;
-// uint16_t SCI_HDAT0 = 0x08;
-// uint16_t SCI_HDAT1 = 0x09;
-// uint16_t SCI_AIADDR = 0x0A;
-// uint16_t SCI_VOL = 0x0B;
-// uint16_t SCI_AICTRL0 = 0x0C;
-// uint16_t SCI_AICTRL1 = 0x0D;
-// uint16_t SCI_AICTRL2 = 0x0E;
-// uint16_t SCI_AICTRL3 = 0x0F;
-// uint16_t MAX_VOLUME = 0x0000;
-// uint16_t MIN_VOLUME = 0xFAFA;
-
+/* VS1053B V4  Registers */
 #define SCI_MODE 0x00
 #define SCI_STATUS 0x01
 #define SCI_BASS 0x02

@@ -34,7 +34,7 @@ static void decoder_max_clock(uint32_t SPI_clock_mhz) {
   const uint32_t CPU_CLK = clock__get_core_clock_hz(); // 96-MHz
   for (uint8_t divider = 2; divider <= 254; divider += 2) {
     if ((CPU_CLK / divider) <= SPI_clock_mhz) {
-      fprintf(stderr, "Pre_Scale: %d \n", divider);
+      // fprintf(stderr, "Pre_Scale: %d \n", divider);
       break;
     }
     /* Setup PreScale Control[7:0] */
@@ -80,44 +80,42 @@ static uint8_t decoder_ssp0_transferByte(uint8_t data_transfer) {
 /* ----------------------------- Public Function ---------------------------- */
 /* -------------------------------------------------------------------------- */
 
-/* P2_0 Input */
+/* (P2_0) Input */
 bool get_DREQ_HighActive() { return LPC_GPIO2->PIN & (1 << 0) ? true : false; }
-/* P2_1 Chip Select */
+/* (P2_1) Chip Select */
 void set_CS_LowActive() { LPC_GPIO2->CLR |= (1 << 1); }
 void set_CS_HighActive() { LPC_GPIO2->SET |= (1 << 1); }
-/* P2_2 MP3 Data Control  */
+/* (P2_2) MP3 Data Control  */
 void set_XDCS_LowActive() { LPC_GPIO2->CLR |= (1 << 2); }
 void set_XDCS_HighActive() { LPC_GPIO2->SET |= (1 << 2); }
-/* P2_4 Reset  */
+/* (P2_4) Reset  */
 void set_RESET_LowActive() { LPC_GPIO2->CLR |= (1 << 4); }
 void set_RESET_HighActive() { LPC_GPIO2->SET |= (1 << 4); }
 
 /* ------------------------------ SETUP Decoder ----------------------------- */
 void decoder_setup() {
 
-  // setup SPI_pin + GPIO (DREQ, CS, DCS, RESET)
+  /* Setup SPI_pin + GPIO (DREQ, CS, DCS, RESET) */
   decoder_ssp0_PINconfig();
 
-  // deactivate reset
+  /* Deactivate reset */
   set_RESET_HighActive();
 
-  // init SPI0: 1 MHZ
+  /* Init SPI0(CLK): 1 MHZ */
   decoder_ssp0__init(1);
 
-  // send dummy byte
+  /* Send dummy byte */
   decoder_ssp0_transferByte(0xFF);
 
-  // Deselect --> CS & XDCS
+  /* Deselect --> CS & XDCS */
   set_CS_HighActive();
   set_XDCS_HighActive();
 
-  // set volume
+  /* Set default Volume */
   decoder_write_register(SCI_VOL, 25, 25);
 
-  // set bass
+  /* Set Bass + Treble */
   set_BassLevel(1);
-
-  // set treble
   set_TrebleLevel(1);
 
   /* --------------------- Decoder Version + MODE + CLOCK */
@@ -133,7 +131,7 @@ void decoder_setup() {
    *----> Increase the VS1053 internal clock multiplier.           *
    *----> Up our SPI Speed                                         *
    *----> Please Read DataSheet Page.12(max SCI reads are CLKI/72) *
-   *---->  4MHz will be safe.                                      *
+   *---->  Frequency = safe < 4MHz (Tested)                        *
    ****************************************************************/
   /* Set multiplier to 3.0x */
   decoder_write_register(SCI_CLOCKF, 0x60, 0x00);
@@ -150,9 +148,9 @@ uint16_t decoder_read_register(uint16_t register_address) {
   while (!get_DREQ_HighActive()) {
     ; // wait
   }
-  set_CS_LowActive();
+  set_CS_LowActive(); // ON
 
-  /* SCI:  Instruction (8bits) + address(8bits)+ data(16bits)  */
+  /* Instruction (8bits) + address(8bits) + data(16bits) */
   decoder_ssp0_transferByte(0x03); //  OP_code for READ
   decoder_ssp0_transferByte(register_address);
 
@@ -164,7 +162,7 @@ uint16_t decoder_read_register(uint16_t register_address) {
   while (!get_DREQ_HighActive()) {
     ; // wait
   }
-  set_CS_HighActive();
+  set_CS_HighActive(); // OFF
 
   uint16_t finalvalue = 0;
   finalvalue |= ((first_8bits << 8) | (second_8bits << 0));
@@ -176,9 +174,9 @@ void decoder_write_register(uint16_t register_address, uint8_t MSB_byte, uint8_t
   while (!get_DREQ_HighActive()) {
     ; // Wait
   }
-  set_CS_LowActive();
+  set_CS_LowActive(); // ON
 
-  /* SCI:  Instruction (8bits) + address(8bits)+ data(16bits)  */
+  /* Instruction (8bits) + address(8bits) + data(16bits) */
   decoder_ssp0_transferByte(0x02); //  OP_code for WRITE
   decoder_ssp0_transferByte(register_address);
 
@@ -188,7 +186,7 @@ void decoder_write_register(uint16_t register_address, uint8_t MSB_byte, uint8_t
   while (!get_DREQ_HighActive()) {
     ; // Wait
   }
-  set_CS_HighActive();
+  set_CS_HighActive(); // OFF
 }
 
 /* --------------------------- SEND MP3 DATA Byte --------------------------- */
