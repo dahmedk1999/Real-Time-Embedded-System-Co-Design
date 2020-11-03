@@ -197,6 +197,7 @@ scons --project=lab9
 
 # SJ2 Board Flash Command:
 python nxp-programmer/flash.py --input _build_lab9/lab9.bin
+```
 
 
 ## MP3 Project: Develop SSD1306 (SPI) 126x64 OLED Driver (Naive-Way)
