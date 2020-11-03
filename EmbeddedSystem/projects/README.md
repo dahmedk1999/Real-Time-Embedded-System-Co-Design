@@ -217,6 +217,7 @@ python nxp-programmer/flash.py --input _build_lab9/lab9.bin
 
 * L3-Driver       [Decoder Source](mp3_decoder/l3_drivers/sources/decoder_mp3.c)                  
 * L5-Application  [main](mp3_decoder/l5_application/main.c)
+```
 # Compile Command:
 scons --project=mp3_decoder
 
