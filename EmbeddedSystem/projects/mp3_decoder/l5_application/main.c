@@ -55,6 +55,10 @@ void mp3_reader_task(void *p) {
         f_read(&object_file, TX_buffer512, sizeof(TX_buffer512), &br);
         xQueueSend(Q_songdata, TX_buffer512, portMAX_DELAY);
         /* New Song request ???*/
+        if (uxQueueMessagesWaiting(Q_trackname)) {
+          // printf("New  song request\n");
+          break;
+        }
       }
       f_close(&object_file);
     } else {
@@ -80,7 +84,7 @@ void mp3_player_task(void *p) {
       decoder_send_mp3Data(RX_buffer512[i]);
       // printf("%x \t", RX_buffer512[i]);
     }
-    // printf("Buffer Transmit: %d (times)\n", counter);
+    printf("Buffer Transmit: %d (times)\n", counter);
     counter++;
   }
 }
