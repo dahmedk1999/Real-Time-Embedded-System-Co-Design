@@ -175,8 +175,6 @@ python nxp-programmer/flash.py --input _build_lab8/lab8.bin
 ```
 ## Lab9: Develop a Firmware to Perform I2C Loopback 
 ![image](https://user-images.githubusercontent.com/38081550/97950248-1ced5280-1d4b-11eb-9f5f-4f052b015f7f.png)
-![image](https://user-images.githubusercontent.com/38081550/97950301-4d34f100-1d4b-11eb-89df-1fe5066be634.png)
-![image](https://user-images.githubusercontent.com/38081550/97950353-6f2e7380-1d4b-11eb-89d0-1f1317ebcede.png)
 
 ### OBJECTIVE
 Using I2C__2(Master) to READ/WRITE to I2C__1(Slave) in same board
@@ -190,8 +188,8 @@ I2C__1:  SDA = P0_0        SCL = P0_1     (Slave)
 * L3-Driver       [Master Header](lab9/l3_drivers/i2c.h)
 * L3-Driver       [Slave Header](lab9/l3_drivers/i2c_slave.h)
 
-* L3-Driver       [Master Source](lab9/l3_drivers/i2c.c)
-* L3-Driver       [Slave Source](lab9/l3_drivers/i2c_slave.c)                   
+* L3-Driver       [Master Source](lab9/l3_drivers/sources/i2c.c)
+* L3-Driver       [Slave Source](lab9/l3_drivers/sources/i2c_slave.c)                   
 * L5-Application  [main](lab9/l5_application/main.c)
 ```
 # Compile Command:
