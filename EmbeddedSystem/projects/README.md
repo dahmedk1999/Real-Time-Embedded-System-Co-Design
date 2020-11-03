@@ -173,6 +173,32 @@ scons --project=lab8
 # SJ2 Board Flash Command:
 python nxp-programmer/flash.py --input _build_lab8/lab8.bin
 ```
+## Lab9: Develop a Firmware to Perform I2C Loopback 
+![image](https://user-images.githubusercontent.com/38081550/97950248-1ced5280-1d4b-11eb-9f5f-4f052b015f7f.png)
+![image](https://user-images.githubusercontent.com/38081550/97950301-4d34f100-1d4b-11eb-89df-1fe5066be634.png)
+![image](https://user-images.githubusercontent.com/38081550/97950353-6f2e7380-1d4b-11eb-89d0-1f1317ebcede.png)
+
+### OBJECTIVE
+Using I2C__2(Master) to READ/WRITE to I2C__1(Slave) in same board
+I2C__2:  SDA = P0_10       SCL = P0_11    (Master)
+I2C__1:  SDA = P0_0        SCL = P0_1     (Slave)
+1. Draw [State Machine for I2C Mode](lab9/i2c_state_machine.pdf)
+2. Implement I2C Slave driver (I2C__1)
+   * The I2C Slave should be detect by Master (I2C__2 ) with any 8-bits assigned address
+   * The I2C Slave should be able to perform single byte or multi-bytes transaction(R/W)
+
+* L3-Driver       [Master Header](lab9/l3_drivers/i2c.h)
+* L3-Driver       [Slave Header](lab9/l3_drivers/i2c_slave.h)
+
+* L3-Driver       [Master Source](lab9/l3_drivers/i2c.c)
+* L3-Driver       [Slave Source](lab9/l3_drivers/i2c_slave.c)                   
+* L5-Application  [main](lab9/l5_application/main.c)
+```
+# Compile Command:
+scons --project=lab9
+
+# SJ2 Board Flash Command:
+python nxp-programmer/flash.py --input _build_lab9/lab9.bin
 
 
 ## MP3 Project: Develop SSD1306 (SPI) 126x64 OLED Driver (Naive-Way)
