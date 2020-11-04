@@ -45,7 +45,8 @@ void mp3_reader_task(void *p) {
   UINT br;
   while (1) {
     xQueueReceive(Q_trackname, song_name, portMAX_DELAY);
-    oled_print(song_name); // Test it on the Oled Screen
+    oled_print(song_name, page_0, init); // Test it on the Oled Screen
+    horizontal_scrolling(page_0, page_0);
     const char *file_name = song_name;
     FIL object_file;
     FRESULT result = f_open(&object_file, file_name, (FA_READ));

@@ -6,6 +6,21 @@
 #include "gpio.h"
 #include "gpio_lab.h"
 #include <string.h>
+typedef enum {
+  page_0,
+  page_1,
+  page_2,
+  page_3,
+  page_4,
+  page_5,
+  page_6,
+  page_7,
+} page_address;
+
+typedef enum {
+  not_init,
+  init,
+} multiple_line;
 
 /* -------------------------------------------------------------------------- */
 /* ------------------------- Declaration + Power on ------------------------- */
@@ -57,8 +72,14 @@ void oled_update();
 /* Horizontal Address Mode */
 void horizontal_addr_mode();
 
+/* Horizontal Scrolling in given page range */
+void horizontal_scrolling(page_address start_page, page_address stop_page);
+
+/* Display String in specific line */
+void new_line(uint8_t line_address);
+
 /**/
-void oled_print(char *message);
+void oled_print(char *message, uint8_t pages_num, multiple_line init_or_not);
 
 /* -------------------------------------------------------------------------- */
 /* --------------------------- LOOK UP char Array --------------------------- */

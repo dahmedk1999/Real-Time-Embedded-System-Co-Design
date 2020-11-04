@@ -158,6 +158,7 @@ void turn_on_lcd() {
   oled_update();
 
   /* Print ("CMPE") */
+  new_line(0);
   char_C();
   char_M();
   char_P();
@@ -216,7 +217,7 @@ void horizontal_addr_mode() {
   oled_setC_bus();
   /*  Set address mode  */
   oled__transfer_byte(0x20); // OP Code --> Address range []
-  oled__transfer_byte(0x00);
+  oled__transfer_byte(0x00); // Value = 0x02 (caution!!!)
 
   /*  Set column mode  */
   oled__transfer_byte(0x21); // OP Code --> Address range []
@@ -226,30 +227,101 @@ void horizontal_addr_mode() {
   /*  Set page address  */
   oled__transfer_byte(0x22); // OP Code --> Address range []
   oled__transfer_byte(0x00);
-  oled__transfer_byte(0x07);
+  oled__transfer_byte(0x07); // ending
+}
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+void horizontal_scrolling(page_address start_page, page_address stop_page) {
+  oled_CS();
+  {
+    oled_setC_bus();
+    // oled__transfer_byte(0x2E); // OP_code Deactivate scrolling
+    oled__transfer_byte(0x26); // OP_code Set Funct  scrolling
+    oled__transfer_byte(0x00); // dummy byte
+    oled__transfer_byte(0x00 | start_page);
+    oled__transfer_byte(0x05); // OP_code Frame speed
+    oled__transfer_byte(0x00 | stop_page);
+    oled__transfer_byte(0x00); // dummy byte
+    oled__transfer_byte(0xFF); // dummy byte
+    oled__transfer_byte(0x2F); // OP_code Activate scrolling
+  }
+  oled_DS();
+}
+
+/*================================= New Line =================================
+*@brief:  Display String In Specific Line ( Pages Addressing Mode )
+*@Note:   Please Check The Datasheet Pages37
+          * Require command_bus (ON)
+          * Page Address range [0xB0 -- 0xB7]
+          * ONE colum = EIGHT seg
+          *
+_________________________________________________________
+|Colum0|Colum1|Colum2|Colum3|Colum4|Colum5|Colum6|Colum7|
+---------------------------------------------------------
+|8-seg |8-seg |8-seg |8-seg |8-seg |8-seg |8-seg |8-seg | --> Page0
+|8-seg |8-seg |8-seg |8-seg |8-seg |8-seg |8-seg |8-seg | --> Page1
+|8-seg |8-seg |8-seg |8-seg |8-seg |8-seg |8-seg |8-seg | --> Page2
+|8-seg |8-seg |8-seg |8-seg |8-seg |8-seg |8-seg |8-seg | --> Page3
+|8-seg |8-seg |8-seg |8-seg |8-seg |8-seg |8-seg |8-seg | --> Page4
+|8-seg |8-seg |8-seg |8-seg |8-seg |8-seg |8-seg |8-seg | --> Page5
+|8-seg |8-seg |8-seg |8-seg |8-seg |8-seg |8-seg |8-seg | --> Page6
+|8-seg |8-seg |8-seg |8-seg |8-seg |8-seg |8-seg |8-seg | --> Page7
+==============================================================================*/
+// add parameter cho new line
+void new_line(uint8_t line_address) {
+  oled_setC_bus();
+  /* Page Add [0xB0-0xB7] */
+  oled__transfer_byte(0xB0 | line_address);
+  /*************************
+   * Pages Addressing mode
+   * --> Set Colum + SEG <--
+   *************************/
+  uint8_t start_SEG = 0x00;
+  uint8_t start_COLUM = 0x10;
+  oled__transfer_byte(start_SEG);
+  oled__transfer_byte(start_COLUM);
+
+  oled_setD_bus();
 }
 
 /*================================== oled print ===============================
 *@brief:  Using pointer to Print string
+*@para:   *message
+          *page number
+          *init_or_not
 *@Note:   Ready to Call on main.c (all initialization INCLUDED )
+          The first time call need to init
+          --> So we can print Multi-line(page) with different value
 ==============================================================================*/
-void oled_print(char *message) {
+void oled_print(char *message, page_address page_num, multiple_line init_or_not) {
 
-  /* Hardware init + Table inti */
-  config_oled_pin();
-  SPI_oled_initialization();
-  char_array_table();
+  if (init_or_not) {
+    /* Hardware init + Table inti */
+    config_oled_pin();
+    SPI_oled_initialization();
+    char_array_table();
 
-  oled_CS();
-  panel_init();
-  /* Require This to initial al Pixel */
-  oled_clear();
-  oled_update();
+    oled_CS();
+    panel_init();
+    /* Require This to initial al Pixel */
+    oled_clear();
+    oled_update();
 
-  /* Use Lookup Table to search char and Display */
-  display_char(message);
+    /*Select Row [7 <-> 0]*/
+    new_line(page_num);
 
-  oled_DS();
+    /* Use Lookup Table to search char and Display */
+    display_char(message);
+    oled_DS();
+  } else {
+    oled_CS();
+    /*Select Row [7 <-> 0]*/
+    new_line(page_num);
+
+    /* Use Lookup Table to search char and Display */
+    display_char(message);
+    oled_DS();
+  }
 }
 
 /* -------------------------------------------------------------------------- */
