@@ -1,3 +1,5 @@
+#pragma once
+
 #include "lpc40xx.h"
 #include "lpc_peripherals.h"
 #include <stdint.h>
