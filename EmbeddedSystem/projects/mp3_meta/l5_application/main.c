@@ -33,7 +33,7 @@ QueueHandle_t Q_trackname;
 QueueHandle_t Q_songdata;
 
 /* ------------------------------- Task Handle ------------------------------ */
-TaskHandle_t player_handle; 
+TaskHandle_t player_handle;
 
 /* ------------------------ Semaphore Trigger Signal ------------------------ */
 SemaphoreHandle_t play_next;
@@ -70,15 +70,35 @@ static void mp3_reader_task(void *p) {
   UINT br; // byte read
   while (1) {
     xQueueReceive(Q_trackname, song_name, portMAX_DELAY);
-
     /* ----- OLED screen ----- */
-    oled_print(song_name, page_0, init); 
-    horizontal_scrolling(page_0, page_0);
+    // oled_print(song_name, page_0, init);
+    // // horizontal_scrolling(page_0, page_0);
 
     /* ----- Reading file ----- */
     const char *file_name = song_name;
     FIL object_file;
     FRESULT result = f_open(&object_file, file_name, (FA_READ));
+
+    /* -------------------------------- Meta-File ------------------------------- */
+    char meta_128[128];
+    f_read(&object_file, meta_128, sizeof(meta_128), &br); // for meta data
+    int n = 0;
+    char test1[128] = {"-"};
+    for (int i = 0; i < 128; i++) {
+      if ((((int)(meta_128[i]) > 47) && ((int)(meta_128[i]) < 58)) ||
+          (((int)(meta_128[i]) > 64) && ((int)(meta_128[i]) < 91)) ||
+          (((int)(meta_128[i]) > 96) && ((int)(meta_128[i]) < 123))) {
+        // printf("i[%d]:  %c\n ", i, meta_128[i]);
+        test1[i] = meta_128[i];
+        n = n + 1;
+      }
+      printf("t[%d]:  %c\n ", i, test1[i]);
+    }
+
+    oled_print(&test1[0], page_0, init);
+    // oled_print(&test1[21], page_1, 0);
+    // oled_print(&test1[49], page_2, 0);
+    /* -------------------------------------------------------------------------- */
     if (FR_OK == result) {
       /* Update NEW "br" for Loopback */
       f_read(&object_file, TX_buffer512, sizeof(TX_buffer512), &br);
@@ -122,7 +142,7 @@ static void mp3_player_task(void *p) {
       decoder_send_mp3Data(RX_buffer512[i]);
       // printf("%x \t", RX_buffer512[i]);
     }
-    printf("Buffer Transmit: %d (times)\n", counter);
+    // printf("Buffer Transmit: %d (times)\n", counter);
     counter++;
   }
 }
