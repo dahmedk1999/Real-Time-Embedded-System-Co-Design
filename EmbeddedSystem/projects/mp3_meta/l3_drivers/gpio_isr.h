@@ -34,8 +34,3 @@ void gpio0__interrupt_dispatcher(void);
 /* Dispatch the specific function in Interrupt Service Routine (ISR)--Port 2 */
 void gpio2__interrupt_dispatcher(void);
 
-/* An unregistered interrupt handler is a forever loop */
-static void lpc_peripheral__halt_handler(void) {
-  while (1) { /* Nothing*/
-  }
-}

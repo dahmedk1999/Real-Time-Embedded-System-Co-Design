@@ -9,6 +9,12 @@
 //( Please let me know if it is a requirement, I can total modify code in live stream meeting)
 
 /*-----Interupt vector table Port 1 + Port 2-------------*/
+/* An unregistered interrupt handler is a forever loop */
+static void lpc_peripheral__halt_handler(void) {
+  while (1) { /* Nothing*/
+  }
+}
+
 static function_pointer_t gpio0_callbacks[64] = {
 
     lpc_peripheral__halt_handler, // Pin 0
