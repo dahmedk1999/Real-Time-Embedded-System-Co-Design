@@ -39,10 +39,10 @@ typedef struct {
 
 void print_songINFO(char *meta) {
   int index_counter = 0;
-  uint8_t tag_counter = 0;
+  uint8_t title_counter = 0;
   uint8_t artist_counter = 0;
   uint8_t album_counter = 0;
-  uint8_t genre_counter = 0;
+  uint8_t year_counter = 0;
   /* Require Array Init (or Crash Oled driver) */
   char meta_array[128] = {"0"};
   mp3_meta song_INFO = {0};
@@ -55,13 +55,13 @@ void print_songINFO(char *meta) {
       if (i < 3)
         song_INFO.Tag[i] = character;
       else if (i > 2 && i < 33)
-        song_INFO.Title[i - 3] = character;
+        song_INFO.Title[title_counter++] = character;
       else if (i > 32 && i < 63)
-        song_INFO.Artist[i - 33] = character;
+        song_INFO.Artist[artist_counter++] = character;
       else if (i > 62 && i < 93)
-        song_INFO.Album[i - 63] = character;
+        song_INFO.Album[album_counter++] = character;
       else if (i > 92 && i < 97)
-        song_INFO.Year[i - 93] = character;
+        song_INFO.Year[year_counter++] = character;
       /*Testing*/
       // meta_array[index_counter] = meta[i];
       // index_counter = index_counter + 1;
