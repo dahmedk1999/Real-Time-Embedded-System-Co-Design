@@ -27,6 +27,54 @@
 #include "string.h"
 #include "uart_lab.h"
 
+/* -------------------------------------------------------------------------- */
+typedef struct {
+  char Tag[3];
+  char Title[30];
+  char Artist[30];
+  char Album[30];
+  char Year[4];
+  uint8_t genre;
+} mp3_meta;
+
+void print_songINFO(char *meta) {
+  int index_counter = 0;
+  uint8_t tag_counter = 0;
+  uint8_t artist_counter = 0;
+  uint8_t album_counter = 0;
+  uint8_t genre_counter = 0;
+  /* Require Array Init (or Crash Oled driver) */
+  char meta_array[128] = {"0"};
+  mp3_meta song_INFO = {0};
+  for (int i = 0; i < 128; i++) {
+    if ((((int)(meta[i]) > 47) && ((int)(meta[i]) < 58)) ||  // number
+        (((int)(meta[i]) > 64) && ((int)(meta[i]) < 91)) ||  // ALPHABET
+        (((int)(meta[i]) > 96) && ((int)(meta[i]) < 123)) || // alphabet
+        ((int)(meta[i])) == 32) {                            // Space
+      char character = (int)(meta[i]);
+      if (i < 3)
+        song_INFO.Tag[i] = character;
+      else if (i > 2 && i < 33)
+        song_INFO.Title[i - 3] = character;
+      else if (i > 32 && i < 63)
+        song_INFO.Artist[i - 33] = character;
+      else if (i > 62 && i < 93)
+        song_INFO.Album[i - 63] = character;
+      else if (i > 92 && i < 97)
+        song_INFO.Year[i - 93] = character;
+      /*Testing*/
+      // meta_array[index_counter] = meta[i];
+      // index_counter = index_counter + 1;
+      // printf("t[%d]:  %c\n ", i, meta[i]);
+    }
+  }
+  /* ----- OLED screen ----- */
+  oled_print(song_INFO.Title, page_0, init);
+  oled_print(song_INFO.Artist, page_2, 0);
+  oled_print(song_INFO.Album, page_3, 0);
+  oled_print(song_INFO.Year, page_4, 0);
+  horizontal_scrolling(page_0, page_0);
+}
 /* ------------------------------ Queue handle ------------------------------ */
 /* CLI or SONG_Control --> reader_Task */
 QueueHandle_t Q_trackname;
@@ -71,32 +119,25 @@ static void mp3_reader_task(void *p) {
   UINT br; // byte read
   while (1) {
     xQueueReceive(Q_trackname, song_name, portMAX_DELAY);
-    /* ----- OLED screen ----- */
-    oled_print(song_name, page_0, init);
 
-    /* ----- Reading file ----- */
+    /* ----- OPEN file ----- */
     const char *file_name = song_name;
     FIL object_file;
     FRESULT result = f_open(&object_file, file_name, (FA_READ));
 
-    /* -------------------------------- Meta-File ------------------------------- */
+    /* ----------------------------- READ Song INFO ----------------------------- */
     char meta_128[128];
-    f_read(&object_file, meta_128, sizeof(meta_128), &br); // for meta data
-    int n = 0;
-    char test1[128] = {"0"}; // careful this
-    for (int i = 0; i < 128; i++) {
-      if ((((int)(meta_128[i]) > 47) && ((int)(meta_128[i]) < 58)) ||
-          (((int)(meta_128[i]) > 64) && ((int)(meta_128[i]) < 91)) ||
-          (((int)(meta_128[i]) > 96) && ((int)(meta_128[i]) < 123)) || ((int)(meta_128[i]) == 32)) {
-        // printf("i[%d]:  %c\n ", i, meta_128[i]);
-        test1[n] = meta_128[i];
-        n = n + 1;
-      }
-      printf("t[%d]:  %c\n ", i, test1[i]);
-    }
-
-    oled_print(&test1[21], page_2, 0);
-    horizontal_scrolling(page_0, page_0);
+    /*************************************************************
+     * f_lseek( ptr_objectFile, ptr_READ/WRITE[top-->bottom] )
+     * | --> sizeof(mp3_file) - last_128[byte]
+     * | ----> Set READ pointer
+     * | ------> Extract meta file
+     * | --------> Put the READ pointer back to [0]
+     **************************************************************/
+    f_lseek(&object_file, f_size(&object_file) - (sizeof(char) * 128));
+    f_read(&object_file, meta_128, sizeof(meta_128), &br);
+    print_songINFO(meta_128);
+    f_lseek(&object_file, 0);
     /* -------------------------------------------------------------------------- */
     if (FR_OK == result) {
       /* Update NEW "br" for Loopback */
@@ -107,14 +148,14 @@ static void mp3_reader_task(void *p) {
         xQueueSend(Q_songdata, TX_buffer512, portMAX_DELAY);
         /* New Song request (CLI) */
         if (uxQueueMessagesWaiting(Q_trackname)) {
-          printf("New song request\n");
+          // printf("New song request\n");
           break;
         }
       }
       /* ----- Automate Next ----- */
       if (br == 0) {
         xSemaphoreGive(play_next);
-        printf("BR == 0\n");
+        // printf("BR == 0\n");
       }
       f_close(&object_file);
     } else {
@@ -139,7 +180,6 @@ static void mp3_player_task(void *p) {
         vTaskDelay(1);
       }
       decoder_send_mp3Data(RX_buffer512[i]);
-      // printf("%x \t", RX_buffer512[i]);
     }
     // printf("Buffer Transmit: %d (times)\n", counter);
     counter++;
@@ -159,14 +199,12 @@ static void mp3_SongControl_task(void *p) {
   while (1) {
     if (xSemaphoreTake(play_next, portMAX_DELAY)) {
       /* Loopback when hit last song */
-      if (song_index >= song_list__get_item_count()) {
+      if (song_index == song_list__get_item_count()) {
         song_index = 0;
       }
       xQueueSend(Q_trackname, song_list__get_name_for_item(song_index), portMAX_DELAY);
       song_index++;
     }
-
-    vTaskDelay(10)
   }
 }
 
