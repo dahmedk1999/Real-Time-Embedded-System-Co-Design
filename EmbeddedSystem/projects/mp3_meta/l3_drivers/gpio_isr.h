@@ -33,4 +33,3 @@ void gpio2__attach_interrupt(uint8_t pin_num, gpio_interrupt_e interrupt_type, f
 void gpio0__interrupt_dispatcher(void);
 /* Dispatch the specific function in Interrupt Service Routine (ISR)--Port 2 */
 void gpio2__interrupt_dispatcher(void);
-

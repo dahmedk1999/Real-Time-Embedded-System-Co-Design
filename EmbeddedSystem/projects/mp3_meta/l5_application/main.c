@@ -205,6 +205,7 @@ static void mp3_SongControl_task(void *p) {
       xQueueSend(Q_trackname, song_list__get_name_for_item(song_index), portMAX_DELAY);
       song_index++;
     }
+    vTaskDelay(75);
   }
 }
 
