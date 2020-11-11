@@ -151,28 +151,25 @@ static void mp3_reader_task(void *p) {
           // printf("New song request\n");
           break;
         }
-
         /* ----------------------- Calculate Real-Time Playing ----------------------- */
-        /*************************************************************
-         * Distance: Total number of time tranfer 512B_byte
-         * Time    : Song Duration
-         * Speed   : How many time 512_byte is transfer/second
-         * ----------------For Example-----------------
-         * Time: 3:45 min
-         * Distance: 17767 times transfer 512_byte
-         * The estimation will be ---> 17767/225 = 78.964
-         * Then 78.964/2 = 39(+-5) (cause we have 2 task)
-         * This measurement is not 100% matching but 95%
-         * However, It just apply for 128 bit/rate song
-         * ---->with 320 bit/rate song it is run faster
-         * ---->Same duration but diffrent size of mp3 file
-         * ---->Speed change
+        /**************************************************************
+         * Distance: Total number of time tranfer 512B_byte           *
+         * Time    : Song Duration                                    *
+         * Speed   : How many time 512_byte is transfer/second        *
+         * ------------------------For Example------------------------*
+         * Time: 3:45 min                                             *
+         * Distance: 17767 times transfer 512_byte                    *
+         * The estimation will be ---> 17767/225 = 78.964             *
+         * Then 78.964/2 = 39(+-5) (cause we have 2 task)             *
+         * This measurement is not 100% matching but 95%              *
+         * However, It just apply for 128 bit/rate song               *
+         * ---->with 320 bit/rate song it is run faster               *
+         * ---->Same duration but diffrent size of mp3 file           *
+         * ---->Speed change  (need to work on this)                  *
          **************************************************************/
-        uint8_t second;
-        uint8_t minute;
         static uint8_t speed = 35; // 78.964;
-        second = distance / speed;
-        minute = distance / (speed * 60);
+        uint8_t second = distance / speed;
+        uint8_t minute = distance / (speed * 60);
         if (second > 60) {
           second = second - (minute * 60);
         }
@@ -229,7 +226,9 @@ static void mp3_SongControl_task(void *p) {
   volatile size_t song_index = 0;
   song_list__populate();
   while (1) {
+    /* Check any Switch is Pressed */
     if (xSemaphoreTake(next_previous, portMAX_DELAY)) {
+      /* -----------------------process NEXT */
       if (xSemaphoreTake(play_next, 10)) {
         while (gpio1__get_level(0, 25)) {
           vTaskDelay(10);
@@ -240,11 +239,13 @@ static void mp3_SongControl_task(void *p) {
         }
         xQueueSend(Q_trackname, song_list__get_name_for_item(song_index), portMAX_DELAY);
         song_index++;
-      } else if (xSemaphoreTake(play_previous, 10)) {
+      }
+      /* -----------------------process Previous */
+      else if (xSemaphoreTake(play_previous, 10)) {
         while (gpio1__get_level(0, 26)) {
           vTaskDelay(10);
         }
-        /* Loopback when hit last song */
+        /* Loopback when hit first song */
         if (song_index == 0) {
           song_index = song_list__get_item_count();
         }
