@@ -240,7 +240,7 @@ static void mp3_SongControl_task(void *p) {
         xQueueSend(Q_trackname, song_list__get_name_for_item(song_index), portMAX_DELAY);
         song_index++;
       }
-      /* -----------------------process Previous */
+      /* -----------------------process PREVIOUS */
       else if (xSemaphoreTake(play_previous, 10)) {
         while (gpio1__get_level(0, 26)) {
           vTaskDelay(10);
