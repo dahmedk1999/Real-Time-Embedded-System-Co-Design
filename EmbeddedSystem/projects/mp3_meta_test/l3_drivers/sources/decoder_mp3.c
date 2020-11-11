@@ -136,7 +136,7 @@ void decoder_setup() {
   /* Set multiplier to 3.0x */
   decoder_write_register(SCI_CLOCKF, 0x60, 0x00);
   /* Set SPI bus speed to 4MHz (16MHz / 4 = 4MHz) */
-  decoder_max_clock(4);
+  decoder_max_clock(6);
 
   uint16_t MP3Clock = decoder_read_register(SCI_CLOCKF);
   printf("SCI_CLK = 0x%x\n", MP3Clock);

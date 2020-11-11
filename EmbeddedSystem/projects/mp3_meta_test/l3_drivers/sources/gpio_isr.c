@@ -176,7 +176,7 @@ void gpio0__interrupt_dispatcher(void) {
   attached_user_function();
   /* Clear the interrupt after done ISR */
   LPC_GPIOINT->IO0IntClr |= (1 << pin_that_generated_interrupt);
-  delay__ms(1);
+  // delay__ms(1);
 }
 
 /*===============================gpio2__interrupt_dispatcher (Port 2)======================================
@@ -205,5 +205,5 @@ void gpio2__interrupt_dispatcher(void) {
   attached_user_function();
   /* Clear the interrupt after done ISR */
   LPC_GPIOINT->IO2IntClr |= (1 << pin_that_generated_interrupt);
-  delay__ms(1);
+  // delay__ms(1);
 }
