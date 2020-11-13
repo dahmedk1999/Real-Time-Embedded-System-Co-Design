@@ -157,12 +157,12 @@ static void mp3_reader_task(void *p) {
          * Time    : Song Duration                                    *
          * Speed   : How many time 512_byte is transfer/second        *
          * ------------------------For Example------------------------*
-         * Time: 3:45 min                                             *
-         * Distance: 17767 times transfer 512_byte                    *
-         * The estimation will be ---> 17767/225 = 78.964             *
-         * Then 78.964/2 = 39(+-5) (cause we have 2 task)             *
-         * This measurement is not 100% matching but 95%              *
-         * However, It just apply for 128 bit/rate song               *
+         *  Time: 3:45 min                                            *
+         *  Distance: 17767 times transfer 512_byte                   *
+         *  The estimation will be ---> 17767/225 = 78.964            *
+         *  Then 78.964/2 = 39(+-5) (cause we have 2 task)            *
+         *  This measurement is not 100% matching but 95%             *
+         *  However, It just apply for 128 bit/rate song              *
          * ---->with 320 bit/rate song it is run faster               *
          * ---->Same duration but diffrent size of mp3 file           *
          * ---->Speed change  (need to work on this)                  *
