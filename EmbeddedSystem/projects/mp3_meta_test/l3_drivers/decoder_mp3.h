@@ -28,7 +28,7 @@
 #define SCI_AICTRL2 0x0E
 #define SCI_AICTRL3 0x0F
 #define MAX_VOLUME 0x0000
-#define MIN_VOLUME 0xFAFA
+#define MIN_VOLUME 0xFEFE
 
 /* ---------------------------- Initial Function ---------------------------- */
 void decoder_setup();
@@ -59,3 +59,4 @@ void set_Bass(uint8_t amplitude, uint8_t frequency);
 void set_Treble(int8_t amplitude, uint8_t frequency);
 void set_BassLevel(uint8_t level);
 void set_TrebleLevel(uint8_t level);
+void set_volume(uint8_t left, uint8_t _right);

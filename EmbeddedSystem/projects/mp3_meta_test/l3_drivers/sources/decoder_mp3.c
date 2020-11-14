@@ -254,3 +254,26 @@ void set_TrebleLevel(uint8_t level) {
     break;
   }
 }
+
+void set_volume(uint8_t left, uint8_t right) {
+  // /* Setup SPI_pin + GPIO (DREQ, CS, DCS, RESET) */
+  // decoder_ssp0_PINconfig();
+
+  // /* Deactivate reset */
+  // set_RESET_HighActive();
+
+  // /* Init SPI0(CLK): 1 MHZ */
+  // decoder_ssp0__init(1);
+
+  // /* Send dummy byte */
+  // decoder_ssp0_transferByte(0xFF);
+
+  // /* Deselect --> CS & XDCS */
+  // set_CS_HighActive();
+  // set_XDCS_HighActive();
+
+  /* Set default Volume */
+  decoder_write_register(SCI_VOL, left, right);
+  // //
+  // decoder_max_clock(6);
+}

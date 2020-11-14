@@ -88,8 +88,12 @@ SemaphoreHandle_t play_next;
 SemaphoreHandle_t play_previous;
 SemaphoreHandle_t pause_resume;
 SemaphoreHandle_t next_previous;
+SemaphoreHandle_t volume_up;
+SemaphoreHandle_t volume_down;
 
 volatile bool pause = true;
+volatile bool volume_control = false;
+
 /* ----------------------------- Control Function ---------------------------- */
 /*INTERUPT SERVICE ROUTINE */
 static void interupt_setup(); //
@@ -98,9 +102,14 @@ static void interupt_setup(); //
 static void pause_resume_ISR();
 static void play_next_ISR();
 static void play_previous_ISR();
+static void volume_up_ISR();
+static void volume_down_ISR();
 
 /* button_Task */
 static void pause_resume_Button(); //
+static void volume_up_Button();
+static void volume_down_Button();
+static void bass_treble_control();
 
 /************************************* MP3 READER Task  **********************************
  *@brief: Receive song_name(Queue track_name) <--CLI input <handler_general.c>
@@ -178,6 +187,7 @@ static void mp3_reader_task(void *p) {
         oled_print(playing_time, page_7, 0);
         memset(playing_time, 0, 30);
         distance++;
+        // volume_button_detect();
       }
       /* ----- Automate Next ----- */
       if (br == 0) {
@@ -211,6 +221,7 @@ static void mp3_player_task(void *p) {
       decoder_send_mp3Data(RX_buffer512[i]);
     }
     // printf("Buffer Transmit: %d (times)\n", counter);
+    // volume_button_handle();
     counter++;
   }
 }
@@ -252,8 +263,11 @@ static void mp3_SongControl_task(void *p) {
         xQueueSend(Q_trackname, song_list__get_name_for_item(song_index), portMAX_DELAY);
         song_index--;
       }
+
+      /* ----------------------------- process VOLUME */
+      // volume_button_handle();
     }
-    vTaskDelay(100);
+    vTaskDelay(300);
   }
 }
 
@@ -270,10 +284,15 @@ int main(void) {
   play_previous = xSemaphoreCreateBinary();
   pause_resume = xSemaphoreCreateBinary();
 
+  volume_up = xSemaphoreCreateBinary();
+  volume_down = xSemaphoreCreateBinary();
+
   /* --------------------------- Initialize function */
   interupt_setup();
   decoder_setup();
   sj2_cli__init();
+  uint16_t current_volume = decoder_read_register(SCI_VOL);
+  printf("VOL1: %x\n", current_volume);
 
   /* ---------------------------- Testing Song List  */
   song_list__populate();
@@ -286,6 +305,9 @@ int main(void) {
   xTaskCreate(mp3_player_task, "task_player", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, &player_handle);
   xTaskCreate(mp3_SongControl_task, "Song_control", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
   xTaskCreate(pause_resume_Button, "Pause_task", (2048) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
+  xTaskCreate(volume_up_Button, "volumeUP", (2048) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
+  // xTaskCreate(volume_down_Button, "volumeDOWN", (2048) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
+
   vTaskStartScheduler();
   return 0;
 }
@@ -302,12 +324,17 @@ static void interupt_setup() {
   gpio1__set_as_input(0, 25);
   LPC_IOCON->P0_26 &= ~(0b111); // PREVIOUS
   gpio1__set_as_input(0, 26);
+  LPC_IOCON->P0_30 &= ~(0b111); // Volume down
+  gpio1__set_as_input(0, 30);
+  LPC_IOCON->P0_29 &= ~(0b111); // Volume up
+  gpio1__set_as_input(0, 29);
+
   /* Please check the gpio_isr.h */
   lpc_peripheral__enable_interrupt(LPC_PERIPHERAL__GPIO, gpio0__interrupt_dispatcher, "INTR Port 0");
-  // gpio0__attach_interrupt(30, GPIO_INTR__FALLING_EDGE, play_next_ISR);
-  gpio0__attach_interrupt(25, GPIO_INTR__RISING_EDGE, play_next_ISR);
-  gpio0__attach_interrupt(26, GPIO_INTR__RISING_EDGE, play_previous_ISR);
-  gpio0__attach_interrupt(29, GPIO_INTR__FALLING_EDGE, pause_resume_ISR);
+  gpio0__attach_interrupt(25, GPIO_INTR__FALLING_EDGE, volume_down_ISR); // down 30
+  gpio0__attach_interrupt(26, GPIO_INTR__FALLING_EDGE, volume_up_ISR);   // up 29
+  // gpio0__attach_interrupt(25, GPIO_INTR__RISING_EDGE, play_next_ISR);
+  // gpio0__attach_interrupt(26, GPIO_INTR__RISING_EDGE, play_previous_ISR);
 }
 
 static void play_next_ISR() {
@@ -317,6 +344,14 @@ static void play_next_ISR() {
 static void play_previous_ISR() {
   xSemaphoreGiveFromISR(next_previous, NULL);
   xSemaphoreGiveFromISR(play_previous, NULL);
+}
+static void volume_up_ISR() {
+  // xSemaphoreGiveFromISR(next_previous, NULL);
+  xSemaphoreGiveFromISR(volume_up, NULL);
+}
+static void volume_down_ISR() {
+  // xSemaphoreGiveFromISR(next_previous, NULL);
+  xSemaphoreGiveFromISR(volume_down, NULL);
 }
 static void pause_resume_ISR() { xSemaphoreGiveFromISR(pause_resume, NULL); }
 
@@ -336,3 +371,74 @@ static void pause_resume_Button() {
 }
 
 /* -------------------------------------------------------------------------- */
+static void volume_up_Button() {
+  static uint8_t volume_level[16] = {0x00, 0x05, 0x10, 0x15, 0x20, 0x25,
+                                     0x30, 0x35, 0x40, 0x7F, 0xC0}; // 0xC0, 0xE1, 0xF1, 0xFE, 0x19
+  int up_option = 0;
+  int down_option = 8;
+  while (1) {
+    if (xSemaphoreTake(volume_up, portMAX_DELAY)) {
+      switch (up_option) {
+      case 0:
+        fprintf(stderr, "opt:%d\n", up_option);
+        up_option++;
+        set_volume(volume_level[0], volume_level[0]);
+        break;
+      case 1:
+        fprintf(stderr, "opt:%d\n", up_option);
+        up_option++;
+        set_volume(volume_level[1], volume_level[1]);
+        break;
+      case 2:
+        fprintf(stderr, "opt:%d\n", up_option);
+        up_option++;
+        set_volume(volume_level[2], volume_level[2]);
+        break;
+      case 3:
+        fprintf(stderr, "opt:%d\n", up_option);
+        up_option++;
+        set_volume(volume_level[3], volume_level[3]);
+        break;
+      case 4:
+        fprintf(stderr, "opt:%d\n", up_option);
+        up_option++;
+        set_volume(volume_level[4], volume_level[4]);
+        break;
+      case 5:
+        fprintf(stderr, "opt:%d\n", up_option);
+        up_option++;
+        set_volume(volume_level[5], volume_level[5]);
+        break;
+      case 6:
+        fprintf(stderr, "opt:%d\n", up_option);
+        up_option++;
+        set_volume(volume_level[6], volume_level[6]);
+        break;
+      case 7:
+        fprintf(stderr, "opt:%d\n", up_option);
+        up_option++;
+        set_volume(volume_level[7], volume_level[7]);
+        break;
+      case 8:
+        fprintf(stderr, "opt:%d\n", up_option);
+        up_option++;
+        set_volume(volume_level[8], volume_level[8]);
+        break;
+      case 9:
+        fprintf(stderr, "opt:%d\n", up_option);
+        up_option++;
+        set_volume(volume_level[9], volume_level[9]);
+        break;
+      case 10:
+        fprintf(stderr, "opt:%d\n", up_option);
+        set_volume(volume_level[10], volume_level[10]);
+        up_option = 0;
+        break;
+      }
+      vTaskDelay(300);
+    }
+  }
+}
+/* -------------------------------------------------------------------------- */
+
+static void bass_treble_control();
