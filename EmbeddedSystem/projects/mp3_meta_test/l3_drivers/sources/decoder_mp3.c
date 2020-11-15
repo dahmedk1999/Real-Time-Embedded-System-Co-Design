@@ -255,25 +255,9 @@ void set_TrebleLevel(uint8_t level) {
   }
 }
 
-void set_volume(uint8_t left, uint8_t right) {
-  // /* Setup SPI_pin + GPIO (DREQ, CS, DCS, RESET) */
-  // decoder_ssp0_PINconfig();
+static uint8_t volume_level[16] = {0x00, 0x05, 0x10, 0x15, 0x20, 0x25, 0x30, 0x35, 0x40, 0x7F, 0xC0, 0xE1};
 
-  // /* Deactivate reset */
-  // set_RESET_HighActive();
-
-  // /* Init SPI0(CLK): 1 MHZ */
-  // decoder_ssp0__init(1);
-
-  // /* Send dummy byte */
-  // decoder_ssp0_transferByte(0xFF);
-
-  // /* Deselect --> CS & XDCS */
-  // set_CS_HighActive();
-  // set_XDCS_HighActive();
-
-  /* Set default Volume */
-  decoder_write_register(SCI_VOL, left, right);
-  // //
-  // decoder_max_clock(6);
+void set_volume(uint8_t option) {
+  fprintf(stderr, "opt[%d]\n", option);
+  decoder_write_register(SCI_VOL, volume_level[option], volume_level[option]);
 }

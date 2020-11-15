@@ -59,4 +59,4 @@ void set_Bass(uint8_t amplitude, uint8_t frequency);
 void set_Treble(int8_t amplitude, uint8_t frequency);
 void set_BassLevel(uint8_t level);
 void set_TrebleLevel(uint8_t level);
-void set_volume(uint8_t left, uint8_t _right);
+void set_volume(uint8_t level);

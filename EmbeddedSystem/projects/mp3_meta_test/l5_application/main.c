@@ -332,7 +332,7 @@ static void interupt_setup() {
   /* Please check the gpio_isr.h */
   lpc_peripheral__enable_interrupt(LPC_PERIPHERAL__GPIO, gpio0__interrupt_dispatcher, "INTR Port 0");
   gpio0__attach_interrupt(25, GPIO_INTR__FALLING_EDGE, volume_down_ISR); // down 30
-  gpio0__attach_interrupt(26, GPIO_INTR__FALLING_EDGE, volume_up_ISR);   // up 29
+  gpio0__attach_interrupt(30, GPIO_INTR__FALLING_EDGE, volume_up_ISR);   // up 29
   // gpio0__attach_interrupt(25, GPIO_INTR__RISING_EDGE, play_next_ISR);
   // gpio0__attach_interrupt(26, GPIO_INTR__RISING_EDGE, play_previous_ISR);
 }
@@ -374,65 +374,46 @@ static void pause_resume_Button() {
 static void volume_up_Button() {
   static uint8_t volume_level[16] = {0x00, 0x05, 0x10, 0x15, 0x20, 0x25,
                                      0x30, 0x35, 0x40, 0x7F, 0xC0}; // 0xC0, 0xE1, 0xF1, 0xFE, 0x19
-  int up_option = 0;
-  int down_option = 8;
+  uint8_t option = 0;
   while (1) {
     if (xSemaphoreTake(volume_up, portMAX_DELAY)) {
-      switch (up_option) {
+      switch (option) {
       case 0:
-        fprintf(stderr, "opt:%d\n", up_option);
-        up_option++;
-        set_volume(volume_level[0], volume_level[0]);
+        set_volume(option++);
         break;
       case 1:
-        fprintf(stderr, "opt:%d\n", up_option);
-        up_option++;
-        set_volume(volume_level[1], volume_level[1]);
+        set_volume(option++);
         break;
       case 2:
-        fprintf(stderr, "opt:%d\n", up_option);
-        up_option++;
-        set_volume(volume_level[2], volume_level[2]);
+        set_volume(option++);
         break;
       case 3:
-        fprintf(stderr, "opt:%d\n", up_option);
-        up_option++;
-        set_volume(volume_level[3], volume_level[3]);
+        set_volume(option++);
         break;
       case 4:
-        fprintf(stderr, "opt:%d\n", up_option);
-        up_option++;
-        set_volume(volume_level[4], volume_level[4]);
+        set_volume(option++);
         break;
       case 5:
-        fprintf(stderr, "opt:%d\n", up_option);
-        up_option++;
-        set_volume(volume_level[5], volume_level[5]);
+        set_volume(option++);
         break;
       case 6:
-        fprintf(stderr, "opt:%d\n", up_option);
-        up_option++;
-        set_volume(volume_level[6], volume_level[6]);
+        set_volume(option++);
         break;
       case 7:
-        fprintf(stderr, "opt:%d\n", up_option);
-        up_option++;
-        set_volume(volume_level[7], volume_level[7]);
+        set_volume(option++);
         break;
       case 8:
-        fprintf(stderr, "opt:%d\n", up_option);
-        up_option++;
-        set_volume(volume_level[8], volume_level[8]);
+        set_volume(option++);
         break;
       case 9:
-        fprintf(stderr, "opt:%d\n", up_option);
-        up_option++;
-        set_volume(volume_level[9], volume_level[9]);
+        set_volume(option++);
         break;
       case 10:
-        fprintf(stderr, "opt:%d\n", up_option);
-        set_volume(volume_level[10], volume_level[10]);
-        up_option = 0;
+        set_volume(option++);
+        break;
+      case 11:
+        set_volume(option++);
+        option = 0;
         break;
       }
       vTaskDelay(300);
