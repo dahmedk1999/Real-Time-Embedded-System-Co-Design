@@ -79,35 +79,42 @@ void print_songINFO(char *meta) {
 QueueHandle_t Q_trackname;
 /* reader_Task --> player_Task */
 QueueHandle_t Q_songdata;
+/* Resume Song_info */
+QueueHandle_t Q_current_song_info;
 
 /* ------------------------------- Task Handle ------------------------------ */
 TaskHandle_t player_handle;
 
 /* ------------------------ Semaphore Trigger Signal ------------------------ */
+SemaphoreHandle_t next_previous;
 SemaphoreHandle_t play_next;
 SemaphoreHandle_t play_previous;
 SemaphoreHandle_t pause_resume;
-SemaphoreHandle_t next_previous;
 SemaphoreHandle_t volume_up;
-SemaphoreHandle_t volume_down;
+
+SemaphoreHandle_t menu;
+SemaphoreHandle_t menu1;
+SemaphoreHandle_t menu2;
 
 volatile bool pause = false;
+volatile bool pause2 = false;
 volatile bool volume_control = false;
-volatile size_t song_index = 0;
-volatile uint8_t control_signal = 0;
-
+volatile uint8_t song_index;
+volatile uint8_t control_signal;
 /* ----------------------------- Control Function ---------------------------- */
 /*INTERUPT SERVICE ROUTINE */
 static void interupt_setup(); //
 
 /* ISR Button */
-static void pause_resume_ISR();
-static void play_next_ISR();
-static void play_previous_ISR();
-static void volume_up_ISR();
+void pause_resume_ISR();
+void play_next_ISR();
+void play_previous_ISR();
+void volume_up_ISR();
+void menu_ISR();
 
 /* button_Task */
-static void mp3_SongControl_task();
+void mp3_SongControl_task();
+void menu_control_task();
 
 /************************************* MP3 READER Task  **********************************
  *@brief: Receive song_name(Queue track_name) <--CLI input <handler_general.c>
@@ -120,7 +127,7 @@ static void mp3_SongControl_task();
           ---> QueueHandle_t Q_songdata;
           All use PortMax_delay to sleep and wait to wakeup
  ******************************************************************************************/
-static void mp3_reader_task(void *p) {
+void mp3_reader_task(void *p) {
   trackname_t song_name;
   char TX_buffer512[512];
   UINT br; // byte read
@@ -133,7 +140,7 @@ static void mp3_reader_task(void *p) {
     FRESULT result = f_open(&object_file, file_name, (FA_READ));
 
     /* ----------------------------- READ Song INFO ----------------------------- */
-    static char meta_128[128];
+    char meta_128[128];
     /*************************************************************
      * f_lseek( ptr_objectFile, ptr_READ/WRITE[top-->bottom] )
      * | --> sizeof(mp3_file) - last_128[byte]
@@ -144,6 +151,7 @@ static void mp3_reader_task(void *p) {
     f_lseek(&object_file, f_size(&object_file) - (sizeof(char) * 128));
     f_read(&object_file, meta_128, sizeof(meta_128), &br);
     print_songINFO(meta_128);
+    xQueueSend(Q_current_song_info, meta_128, 0);
     f_lseek(&object_file, 0);
     /* -------------------------------------------------------------------------- */
     if (FR_OK == result) {
@@ -191,6 +199,7 @@ static void mp3_reader_task(void *p) {
         distance = 1;
         xSemaphoreGive(next_previous);
         xSemaphoreGive(play_next);
+        control_signal = 0;
         printf("BR == 0\n");
       }
       f_close(&object_file);
@@ -204,7 +213,7 @@ static void mp3_reader_task(void *p) {
           Send every singple byte from buffer to Decoder
  *@note:  Need to wait for Data Request pin (DREQ_HighActive)
  ******************************************************************************************/
-static void mp3_player_task(void *p) {
+void mp3_player_task(void *p) {
   int counter = 1;
   while (1) {
     /* Receive songdata ---> Transfer to DECODER  */
@@ -231,13 +240,16 @@ int main(void) {
 
   Q_trackname = xQueueCreate(1, sizeof(trackname_t));
   Q_songdata = xQueueCreate(1, 512);
+  Q_current_song_info = xQueueCreate(1, 128);
   next_previous = xSemaphoreCreateBinary();
   play_next = xSemaphoreCreateBinary();
   play_previous = xSemaphoreCreateBinary();
   pause_resume = xSemaphoreCreateBinary();
 
   volume_up = xSemaphoreCreateBinary();
-  volume_down = xSemaphoreCreateBinary();
+  menu = xSemaphoreCreateBinary();
+  menu1 = xSemaphoreCreateBinary();
+  menu2 = xSemaphoreCreateBinary();
 
   /* --------------------------- Initialize function */
   interupt_setup();
@@ -256,7 +268,7 @@ int main(void) {
   xTaskCreate(mp3_reader_task, "task_reader", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
   xTaskCreate(mp3_player_task, "task_player", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, &player_handle);
   xTaskCreate(mp3_SongControl_task, "Song_control", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
-  // xTaskCreate(pause_resume_Button, "Pause_task", (2048) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
+  xTaskCreate(menu_control_task, "menu", (2048) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
   // xTaskCreate(volume_up_Button, "volumeUP", (2048) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
   // xTaskCreate(volume_down_Button, "volumeDOWN", (2048) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
 
@@ -270,7 +282,7 @@ int main(void) {
 
 /* ----------------------------- Interrupt Setup ---------------------------- */
 
-static void interupt_setup() {
+void interupt_setup() {
   /*PIN setup*/
   LPC_IOCON->P0_25 &= ~(0b111); // NEXT
   gpio1__set_as_input(0, 25);
@@ -280,30 +292,46 @@ static void interupt_setup() {
   gpio1__set_as_input(0, 30);
   LPC_IOCON->P0_29 &= ~(0b111); // Pause
   gpio1__set_as_input(0, 29);
+  LPC_IOCON->P0_6 &= ~(0b111); // Pause
+  gpio1__set_as_input(0, 6);
 
   /* Please check the gpio_isr.h */
   lpc_peripheral__enable_interrupt(LPC_PERIPHERAL__GPIO, gpio0__interrupt_dispatcher, "INTR Port 0");
-  gpio0__attach_interrupt(29, GPIO_INTR__FALLING_EDGE, pause_resume_ISR); // Pause
+  gpio0__attach_interrupt(29, GPIO_INTR__FALLING_EDGE, pause_resume_ISR); // Pause 29
   gpio0__attach_interrupt(30, GPIO_INTR__FALLING_EDGE, volume_up_ISR);    // Volume
   gpio0__attach_interrupt(25, GPIO_INTR__RISING_EDGE, play_next_ISR);     // Next
-  gpio0__attach_interrupt(26, GPIO_INTR__RISING_EDGE, play_previous_ISR); // Previous
+  // gpio0__attach_interrupt(26, GPIO_INTR__RISING_EDGE, play_previous_ISR); // Previous
+  gpio0__attach_interrupt(26, GPIO_INTR__RISING_EDGE, menu_ISR);
 }
 
-static void play_next_ISR() {
+void play_next_ISR() {
   xSemaphoreGiveFromISR(next_previous, NULL);
   xSemaphoreGiveFromISR(play_next, NULL);
+  control_signal = 0;
 }
-static void play_previous_ISR() {
+void play_previous_ISR() {
   xSemaphoreGiveFromISR(next_previous, NULL);
   xSemaphoreGiveFromISR(play_previous, NULL);
+  control_signal = 1;
 }
-static void volume_up_ISR() {
-  xSemaphoreGiveFromISR(next_previous, NULL);
-  xSemaphoreGiveFromISR(volume_up, NULL);
-}
-static void pause_resume_ISR() {
+void pause_resume_ISR() {
   xSemaphoreGiveFromISR(next_previous, NULL);
   xSemaphoreGiveFromISR(pause_resume, NULL);
+  control_signal = 2;
+}
+void volume_up_ISR() {
+  xSemaphoreGiveFromISR(next_previous, NULL);
+  xSemaphoreGiveFromISR(volume_up, NULL);
+  control_signal = 3;
+}
+void menu_ISR() {
+  pause2 = !pause2;
+  xSemaphoreGiveFromISR(menu, NULL);
+  if (pause2) {
+    xSemaphoreGiveFromISR(menu1, NULL);
+  } else {
+    xSemaphoreGiveFromISR(menu2, NULL);
+  }
 }
 
 /******************************** MP3 Song control Task ***********************************
@@ -312,56 +340,60 @@ static void pause_resume_ISR() {
           Next song (Done)
           Previous (???)
  ******************************************************************************************/
-static void mp3_SongControl_task(void *p) {
+void mp3_SongControl_task(void *p) {
+  song_index = 0;
   uint8_t option = 0;
   song_list__populate();
   while (1) {
     /* Check any Switch is Pressed */
     if (xSemaphoreTake(next_previous, portMAX_DELAY)) {
+      switch (control_signal) {
       /* -----------------------process NEXT */
-      if (xSemaphoreTake(play_next, 10)) {
-        while (gpio1__get_level(0, 25)) {
-          vTaskDelay(10);
+      case 0:
+        vTaskDelay(150);
+        if (xSemaphoreTake(play_next, 10)) {
+          /* Loopback when hit last song */
+          if (song_index == song_list__get_item_count()) {
+            song_index = 0;
+          }
+          xQueueSend(Q_trackname, song_list__get_name_for_item(song_index++), portMAX_DELAY);
         }
-        /* Loopback when hit last song */
-        if (song_index == song_list__get_item_count()) {
-          song_index = 0;
-        }
-        xQueueSend(Q_trackname, song_list__get_name_for_item(song_index++), portMAX_DELAY);
-        // song_index++;
-        // ++song_index;
-      }
+        break;
       /* -----------------------process PREVIOUS */
-      else if (xSemaphoreTake(play_previous, 10)) {
-        while (gpio1__get_level(0, 26)) {
-          vTaskDelay(10);
+      case 1:
+        vTaskDelay(150);
+        if (xSemaphoreTake(play_previous, 10)) {
+          /* Loopback when hit first song */
+          if (song_index == 0) {
+            song_index = song_list__get_item_count();
+          }
+          xQueueSend(Q_trackname, song_list__get_name_for_item(song_index--), portMAX_DELAY);
         }
-        /* Loopback when hit first song */
-        if (song_index == 0) {
-          song_index = song_list__get_item_count();
-        }
-        xQueueSend(Q_trackname, song_list__get_name_for_item(song_index--), portMAX_DELAY);
-        // song_index--;
-        // --song_index;
-      }
+        break;
       /* ------------------------------ process PAUSE */
-      else if (xSemaphoreTake(pause_resume, 10)) {
-        pause = !pause;
-        if (pause) {
-          vTaskSuspend(player_handle);
+      case 2:
+        if (xSemaphoreTake(pause_resume, 10)) {
           vTaskDelay(400);
-        } else {
-          vTaskResume(player_handle);
+          pause = !pause;
+          fprintf(stderr, "pause\n");
+          if (pause) {
+            vTaskSuspend(player_handle);
+          } else {
+            vTaskResume(player_handle);
+          }
         }
-      }
+
+        break;
       /* ----------------------------- process VOLUME */
-      else if (xSemaphoreTake(volume_up, 10)) {
-        if (option == 13) {
-          option = 0;
+      case 3:
+        if (xSemaphoreTake(volume_up, 10)) {
+          if (option == 13) {
+            option = 0;
+          }
+          vTaskDelay(150);
+          set_volume(option++);
+          vTaskDelay(150);
         }
-        vTaskDelay(150);
-        set_volume(option++);
-        vTaskDelay(150);
       }
     }
   }
@@ -369,5 +401,23 @@ static void mp3_SongControl_task(void *p) {
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
-
-static void bass_treble_control();
+void menu_control_task(void *p) {
+  pause2 = true;
+  char temp[128] = {"0"};
+  while (1) {
+    xQueueReceive(Q_current_song_info, temp, 10);
+    if (xSemaphoreTake(menu, portMAX_DELAY)) {
+      if (xSemaphoreTake(menu1, 0)) {
+        vTaskDelay(400);
+        vTaskSuspend(player_handle);
+        const char *name = song_list__get_name_for_item(song_index - 1);
+        //  song_list__get_name_for_item(song_index);
+        oled_print(name, page_0, init);
+      } else if (xSemaphoreTake(menu2, 0)) {
+        vTaskDelay(400);
+        print_songINFO(temp);
+        vTaskResume(player_handle);
+      }
+    }
+  }
+}
