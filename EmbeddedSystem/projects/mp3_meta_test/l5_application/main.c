@@ -98,8 +98,9 @@ SemaphoreHandle_t menu2;
 
 volatile bool pause = false;
 volatile bool pause2 = false;
-volatile bool volume_control = false;
+volatile bool open_menu = true;
 volatile uint8_t song_index;
+volatile uint8_t song_index2;
 volatile uint8_t control_signal;
 /* ----------------------------- Control Function ---------------------------- */
 /*INTERUPT SERVICE ROUTINE */
@@ -297,14 +298,14 @@ void interupt_setup() {
 
   /* Please check the gpio_isr.h */
   lpc_peripheral__enable_interrupt(LPC_PERIPHERAL__GPIO, gpio0__interrupt_dispatcher, "INTR Port 0");
-  gpio0__attach_interrupt(29, GPIO_INTR__FALLING_EDGE, pause_resume_ISR); // Pause 29
   gpio0__attach_interrupt(30, GPIO_INTR__FALLING_EDGE, volume_up_ISR);    // Volume
   gpio0__attach_interrupt(25, GPIO_INTR__RISING_EDGE, play_next_ISR);     // Next
-  // gpio0__attach_interrupt(26, GPIO_INTR__RISING_EDGE, play_previous_ISR); // Previous
-  gpio0__attach_interrupt(26, GPIO_INTR__RISING_EDGE, menu_ISR);
+  gpio0__attach_interrupt(26, GPIO_INTR__RISING_EDGE, play_previous_ISR); // Previous
+  gpio0__attach_interrupt(29, GPIO_INTR__RISING_EDGE, menu_ISR);
 }
 
 void play_next_ISR() {
+
   xSemaphoreGiveFromISR(next_previous, NULL);
   xSemaphoreGiveFromISR(play_next, NULL);
   control_signal = 0;
@@ -358,7 +359,7 @@ void mp3_SongControl_task(void *p) {
           }
           xQueueSend(Q_trackname, song_list__get_name_for_item(song_index++), portMAX_DELAY);
         }
-        break;
+
       /* -----------------------process PREVIOUS */
       case 1:
         vTaskDelay(150);
@@ -367,9 +368,9 @@ void mp3_SongControl_task(void *p) {
           if (song_index == 0) {
             song_index = song_list__get_item_count();
           }
-          xQueueSend(Q_trackname, song_list__get_name_for_item(song_index--), portMAX_DELAY);
+          xQueueSend(Q_trackname, song_list__get_name_for_item(--song_index), portMAX_DELAY);
         }
-        break;
+
       /* ------------------------------ process PAUSE */
       case 2:
         if (xSemaphoreTake(pause_resume, 10)) {
@@ -383,7 +384,6 @@ void mp3_SongControl_task(void *p) {
           }
         }
 
-        break;
       /* ----------------------------- process VOLUME */
       case 3:
         if (xSemaphoreTake(volume_up, 10)) {
@@ -402,7 +402,6 @@ void mp3_SongControl_task(void *p) {
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 void menu_control_task(void *p) {
-
   char temp[128] = {"0"};
   while (1) {
     xQueueReceive(Q_current_song_info, temp, 0);
@@ -412,8 +411,8 @@ void menu_control_task(void *p) {
       if (xSemaphoreTake(menu1, 0)) {
         vTaskDelay(400);
         vTaskSuspend(player_handle);
-        const char *name = song_list__get_name_for_item(song_index - 1);
-        //  song_list__get_name_for_item(song_index);
+        size_t current = song_index - 1;
+        const char *name = song_list__get_name_for_item(current);
         oled_print(name, page_0, init);
       }
       /*Task2: Execute*/

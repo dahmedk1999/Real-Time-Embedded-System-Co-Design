@@ -80,7 +80,10 @@ void horizontal_scrolling(page_address start_page, page_address stop_page);
 /* Display String in specific line */
 void new_line(uint8_t line_address);
 
-/**/
+/* Invert the color on single page*/
+void oled_invert(page_address page_num);
+
+/*Print String pointer */
 void oled_print(char *message, uint8_t pages_num, multiple_line init_or_not);
 
 /* -------------------------------------------------------------------------- */

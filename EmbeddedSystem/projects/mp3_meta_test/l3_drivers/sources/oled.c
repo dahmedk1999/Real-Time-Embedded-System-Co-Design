@@ -283,6 +283,16 @@ void new_line(uint8_t line_address) {
 
   oled_setD_bus();
 }
+void oled_invert(page_address page_num) {
+  oled_CS();
+  {
+    oled_setC_bus();
+    oled__transfer_byte(0xB0 | page_num);
+    oled__transfer_byte(0xA7);
+    oled_setD_bus();
+  }
+  oled_DS();
+}
 
 /*================================== oled print ===============================
 *@brief:  Using pointer to Print string
