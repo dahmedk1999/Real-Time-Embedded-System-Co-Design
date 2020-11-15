@@ -402,18 +402,22 @@ void mp3_SongControl_task(void *p) {
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 void menu_control_task(void *p) {
-  pause2 = true;
+
   char temp[128] = {"0"};
   while (1) {
-    xQueueReceive(Q_current_song_info, temp, 10);
+    xQueueReceive(Q_current_song_info, temp, 0);
+    /* Check Menu Button Press */
     if (xSemaphoreTake(menu, portMAX_DELAY)) {
+      /*Task1: Song list*/
       if (xSemaphoreTake(menu1, 0)) {
         vTaskDelay(400);
         vTaskSuspend(player_handle);
         const char *name = song_list__get_name_for_item(song_index - 1);
         //  song_list__get_name_for_item(song_index);
         oled_print(name, page_0, init);
-      } else if (xSemaphoreTake(menu2, 0)) {
+      }
+      /*Task2: Execute*/
+      else if (xSemaphoreTake(menu2, 0)) {
         vTaskDelay(400);
         print_songINFO(temp);
         vTaskResume(player_handle);
