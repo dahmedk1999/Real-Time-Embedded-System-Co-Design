@@ -3,6 +3,7 @@
         "string": "c",
         "filesystem": "c",
         "xstring": "c",
-        "cstddef": "c"
+        "cstddef": "c",
+        "random": "c"
     }
 }
