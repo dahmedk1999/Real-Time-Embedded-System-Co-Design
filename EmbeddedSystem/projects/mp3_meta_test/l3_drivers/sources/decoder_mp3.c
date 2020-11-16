@@ -136,7 +136,7 @@ void decoder_setup() {
   /* Set multiplier to 3.0x */
   decoder_write_register(SCI_CLOCKF, 0x60, 0x00);
   /* Set SPI bus speed to 4MHz (16MHz / 4 = 4MHz) */
-  decoder_max_clock(4);
+  decoder_max_clock(6);
 
   uint16_t MP3Clock = decoder_read_register(SCI_CLOCKF);
   printf("SCI_CLK = 0x%x\n", MP3Clock);
@@ -253,4 +253,11 @@ void set_TrebleLevel(uint8_t level) {
     set_Treble(0, 5);
     break;
   }
+}
+
+static uint8_t volume_level[16] = {0x00, 0x05, 0x10, 0x15, 0x20, 0x25, 0x30, 0x35, 0x40, 0x45, 0x50, 0x7F, 0xC0};
+
+void set_volume(uint8_t option) {
+  fprintf(stderr, "VOL[%d]\n", option);
+  decoder_write_register(SCI_VOL, volume_level[option], volume_level[option]);
 }

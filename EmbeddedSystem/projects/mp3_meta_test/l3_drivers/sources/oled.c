@@ -44,7 +44,7 @@ void SPI_oled_initialization() {
   LPC_SSP1->CR1 = (1 << 1); // SSP Control Enable
 
   /* c) Setup Prescalar Register to be <= max_clock_mhz-(Input) */
-  uint32_t SSP1_clock_mhz = 8 * 1000 * 1000;           // 8-Mhz
+  uint32_t SSP1_clock_mhz = 16 * 1000 * 1000;          // 8-Mhz //test15
   const uint32_t CPU_CLK = clock__get_core_clock_hz(); // 96-MHz
   for (uint8_t divider = 2; divider <= 254; divider += 2) {
     if ((CPU_CLK / divider) <= SSP1_clock_mhz) {
@@ -282,6 +282,16 @@ void new_line(uint8_t line_address) {
   oled__transfer_byte(start_COLUM);
 
   oled_setD_bus();
+}
+void oled_invert(page_address page_num) {
+  oled_CS();
+  {
+    oled_setC_bus();
+    oled__transfer_byte(0xB0 | page_num);
+    oled__transfer_byte(0xA7);
+    oled_setD_bus();
+  }
+  oled_DS();
 }
 
 /*================================== oled print ===============================
