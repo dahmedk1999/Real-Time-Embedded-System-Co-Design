@@ -99,8 +99,8 @@ SemaphoreHandle_t menu2;
 volatile bool pause = false;
 volatile bool pause2 = false;
 volatile bool open_menu = true;
-volatile uint8_t song_index;
-volatile uint8_t song_index2;
+// volatile uint8_t play_next;
+volatile uint8_t current_song = 0;
 volatile uint8_t control_signal;
 /* ----------------------------- Control Function ---------------------------- */
 /*INTERUPT SERVICE ROUTINE */
@@ -342,9 +342,11 @@ void menu_ISR() {
           Previous (???)
  ******************************************************************************************/
 void mp3_SongControl_task(void *p) {
-  song_index = 0;
+  uint8_t next_song = 0;
+  uint8_t previous_song = 0;
   uint8_t option = 0;
   song_list__populate();
+
   while (1) {
     /* Check any Switch is Pressed */
     if (xSemaphoreTake(next_previous, portMAX_DELAY)) {
@@ -354,10 +356,22 @@ void mp3_SongControl_task(void *p) {
         vTaskDelay(150);
         if (xSemaphoreTake(play_next, 10)) {
           /* Loopback when hit last song */
-          if (song_index == song_list__get_item_count()) {
-            song_index = 0;
+          next_song = current_song;
+          if (next_song == (song_list__get_item_count() - 1)) {
+            next_song = 0;
+            xQueueSend(Q_trackname, song_list__get_name_for_item(next_song++), portMAX_DELAY);
+            current_song = next_song;
+            break;
+          } else if (next_song != 0) {
+            xQueueSend(Q_trackname, song_list__get_name_for_item(++next_song), portMAX_DELAY);
+            current_song = next_song;
+            break;
+          } else {
+            next_song = 0;
+            xQueueSend(Q_trackname, song_list__get_name_for_item(next_song++), portMAX_DELAY);
+            current_song = next_song;
+            break;
           }
-          xQueueSend(Q_trackname, song_list__get_name_for_item(song_index++), portMAX_DELAY);
         }
 
       /* -----------------------process PREVIOUS */
@@ -365,10 +379,17 @@ void mp3_SongControl_task(void *p) {
         vTaskDelay(150);
         if (xSemaphoreTake(play_previous, 10)) {
           /* Loopback when hit first song */
-          if (song_index == 0) {
-            song_index = song_list__get_item_count();
+          previous_song = current_song;
+          if (previous_song == 0) {
+            previous_song = (song_list__get_item_count() - 1);
+            xQueueSend(Q_trackname, song_list__get_name_for_item(--previous_song), portMAX_DELAY);
+            current_song = previous_song;
+            break;
+          } else {
+            xQueueSend(Q_trackname, song_list__get_name_for_item(--previous_song), portMAX_DELAY);
+            current_song = previous_song;
+            break;
           }
-          xQueueSend(Q_trackname, song_list__get_name_for_item(--song_index), portMAX_DELAY);
         }
 
       /* ------------------------------ process PAUSE */
@@ -411,7 +432,7 @@ void menu_control_task(void *p) {
       if (xSemaphoreTake(menu1, 0)) {
         vTaskDelay(400);
         vTaskSuspend(player_handle);
-        size_t current = song_index - 1;
+        size_t current = current_song - 1;
         const char *name = song_list__get_name_for_item(current);
         oled_print(name, page_0, init);
       }
