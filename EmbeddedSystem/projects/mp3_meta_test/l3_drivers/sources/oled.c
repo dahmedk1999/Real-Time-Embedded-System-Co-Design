@@ -124,7 +124,7 @@ void panel_init() {
   oled__transfer_byte(0xDB); // OP-Code
   oled__transfer_byte(0x40);
 
-  horizontal_addr_mode();
+  horizontal_addr_mode(page_0, page_7);
 
   /*  Enable entire display  */
   oled__transfer_byte(0xA4); // OP-Code
@@ -177,7 +177,7 @@ void turn_on_lcd() {
           Update        --> Transfer BitMap to VDRAM
 ===============================================================================*/
 void oled_clear() {
-  for (int row = 0; row < 8; row++) {
+  for (int row = 0; row <= 7; row++) {
     for (int column = 0; column < 128; column++) {
       bitmap_[row][column] = 0x00;
     }
@@ -195,13 +195,16 @@ void oled_fill() {
 
 /* -------------------------------------------------------------------------- */
 void oled_update() {
-  horizontal_addr_mode();
-  for (int row = 0; row < 8; row++) {
+  oled_CS();
+  horizontal_addr_mode(page_0, page_7);
+  oled_setD_bus();
+  for (int row = 0; row <= 7; row++) {
     for (int column = 0; column < 128; column++) {
       oled_setD_bus();
       oled__transfer_byte(bitmap_[row][column]);
     }
   }
+  // oled_DS();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -212,7 +215,7 @@ void oled_update() {
 *@Note:   Please Check The Datasheet of Sequence of Operation
           * Require command_bus (ON)
 ==============================================================================*/
-void horizontal_addr_mode() {
+void horizontal_addr_mode(page_address start_page, page_address stop_page) {
 
   oled_setC_bus();
   /*  Set address mode  */
@@ -226,8 +229,8 @@ void horizontal_addr_mode() {
 
   /*  Set page address  */
   oled__transfer_byte(0x22); // OP Code --> Address range []
-  oled__transfer_byte(0x00);
-  oled__transfer_byte(0x07); // ending
+  oled__transfer_byte(0x00 | start_page);
+  oled__transfer_byte(0x00 | stop_page); // ending
 }
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
@@ -294,8 +297,8 @@ void oled_invert(page_address page_num) {
   oled_DS();
 }
 
-/*================================== oled print ===============================
-*@brief:  Using pointer to Print string
+/*============================== oled print + clear ============================
+*@brief:  Using pointer to PRINT or CLEAR string
 *@para:   *message
           *page number
           *init_or_not
@@ -325,13 +328,28 @@ void oled_print(char *message, page_address page_num, multiple_line init_or_not)
     oled_DS();
   } else {
     oled_CS();
-    /*Select Row [7 <-> 0]*/
+    /*Clear + Select Row Print [7 <-> 0]*/
+    oled_clear_page(page_num, page_num);
     new_line(page_num);
 
     /* Use Lookup Table to search char and Display */
     display_char(message);
     oled_DS();
   }
+}
+
+/* -------------------------- Clear string pointer -------------------------- */
+
+void oled_clear_page(page_address start_page, page_address stop_page) {
+  oled_CS();
+  horizontal_addr_mode(start_page, stop_page);
+  while (start_page++ <= stop_page) {
+    for (int column = 0; column < 128; column++) {
+      oled_setD_bus();
+      oled__transfer_byte(0x00);
+    }
+  }
+  oled_DS();
 }
 
 /* -------------------------------------------------------------------------- */

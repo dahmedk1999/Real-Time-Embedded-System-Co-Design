@@ -72,7 +72,7 @@ void oled_update();
 /* ------------------------------ Control Usage ----------------------------- */
 
 /* Horizontal Address Mode */
-void horizontal_addr_mode();
+void horizontal_addr_mode(page_address start_page, page_address stop_page);
 
 /* Horizontal Scrolling in given page range */
 void horizontal_scrolling(page_address start_page, page_address stop_page);
@@ -83,8 +83,11 @@ void new_line(uint8_t line_address);
 /* Invert the color on single page*/
 void oled_invert(page_address page_num);
 
-/*Print String pointer */
+/* Print String pointer */
 void oled_print(char *message, uint8_t pages_num, multiple_line init_or_not);
+
+/*  Clear string pointer */
+void oled_clear_page(page_address start_page, page_address stop_page);
 
 /* -------------------------------------------------------------------------- */
 /* --------------------------- LOOK UP char Array --------------------------- */
