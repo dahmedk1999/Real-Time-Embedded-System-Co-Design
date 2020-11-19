@@ -319,7 +319,7 @@ void oled_invert(page_address page_num) {
           The first time call need to init
           --> So we can print Multi-line(page) with different value
 ==============================================================================*/
-void oled_print(char *message, page_address page_num, multiple_line init_or_not) {
+void oled_print(const char *message, page_address page_num, multiple_line init_or_not) {
 
   if (init_or_not) {
     /* Hardware init + Table inti */
@@ -375,7 +375,7 @@ static function_pointer_char char_callback[127];
 *@brief:  Using pointer to Print string
 *@Note:   Base in Ascii value to search the lookup table
 ==============================================================================*/
-void display_char(char *string) {
+void display_char(const char *string) {
   oled_CS();
   oled_setD_bus();
   for (int i = 0; i < strlen(string); i++) {

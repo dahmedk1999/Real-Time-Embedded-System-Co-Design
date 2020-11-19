@@ -84,7 +84,7 @@ void new_line(uint8_t line_address);
 void oled_invert(page_address page_num);
 
 /* Print String pointer */
-void oled_print(char *message, uint8_t pages_num, multiple_line init_or_not);
+void oled_print(const char *message, uint8_t pages_num, multiple_line init_or_not);
 
 /*  Clear string pointer */
 void oled_clear_page(page_address start_page, page_address stop_page);
@@ -102,7 +102,7 @@ typedef void (*function_pointer_char)(void);
 void char_array_table();
 
 /* Use Lookup Table to search char and Display */
-void display_char(char *string);
+void display_char(const char *string);
 
 /* ----------------------------- Covert to Pixel ---------------------------- */
 void char_A();
