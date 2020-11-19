@@ -1,7 +1,10 @@
 
 #include "song_handler.h"
 
-static song_memory_t list_of_songs[32];
+static song_memory_t list_of_songs[64];
+static song_memory_t1 song_list[64];
+static song_memory_t2 temp[64];
+static size_t list_size;
 static size_t number_of_songs;
 
 static void song_list__handle_filename(const char *filename) {
@@ -24,6 +27,46 @@ static void song_list__handle_filename(const char *filename) {
     // number_of_songs++;
   }
 }
+
+/* -------------- Display no .mp3 -------------- */
+
+static void get_list_name_NO_mp3(const char *filename_IN) {
+  if (NULL != strstr(filename_IN, ".mp3")) {
+    strncpy(temp[list_size], filename_IN, sizeof(song_memory_t2) - 1);
+    char *temp_name = strtok(temp[list_size], "."); // get temp_name until ".mp3"
+    strncpy(song_list[list_size], temp_name, sizeof(song_memory_t1) - 1);
+    ++list_size;
+  }
+}
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+void open_directory_READ(void) {
+
+  FRESULT res1;
+  static FILINFO file_info1;
+  const char *root_path1 = "/";
+
+  DIR dir1;
+  res1 = f_opendir(&dir1, root_path1);
+
+  if (res1 == FR_OK) {
+    for (;;) {
+      res1 = f_readdir(&dir1, &file_info1); /* Read a directory item */
+      if (res1 != FR_OK || file_info1.fname[0] == 0) {
+        break; /* Break on error or end of dir */
+      }
+
+      if (file_info1.fattrib & AM_DIR) {
+        /* Skip nested directories, only focus on MP3 songs at the root */
+      } else { /* It is a file. */
+        get_list_name_NO_mp3(file_info1.fname);
+      }
+    }
+    f_closedir(&dir1);
+  }
+}
+
+/* ---------------------------------------- */
 
 /* Read the Dir of the song list */
 void song_list__populate(void) {
@@ -51,6 +94,9 @@ void song_list__populate(void) {
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
 /* Return the size of the List Song */
 size_t song_list__get_item_count(void) { return number_of_songs; }
 
@@ -61,6 +107,23 @@ const char *song_list__get_name_for_item(size_t item_number) {
     return_pointer = "";
   } else {
     return_pointer = list_of_songs[item_number];
+  }
+
+  return return_pointer;
+}
+
+/* ---------------------------------------- */
+
+/* Return the size of the List Song WITHOUT ".mp3" */
+size_t song_list__get_item_count2(void) { return list_size; }
+
+const char *get_songName_on_INDEX(size_t item_number) {
+  const char *return_pointer = "";
+
+  if (item_number >= list_size) {
+    return_pointer = "";
+  } else {
+    return_pointer = song_list[item_number];
   }
 
   return return_pointer;
