@@ -75,7 +75,7 @@ void oled_update();
 void horizontal_addr_mode(page_address start_page, page_address stop_page);
 
 /* Horizontal Scrolling in given page range */
-void horizontal_scrolling(page_address start_page, page_address stop_page);
+void horizontal_scrolling(page_address start_page, page_address stop_page, bool Yes_No);
 
 /* Display String in specific line */
 void new_line(uint8_t line_address);

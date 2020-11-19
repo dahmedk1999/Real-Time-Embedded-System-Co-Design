@@ -68,7 +68,10 @@ void print_songINFO(char *meta) {
       // printf("t[%d]:  %c\n ", i, meta[i]);
     }
   }
+
   /* ----- OLED screen ----- */
+  oled_print("Init dummy", page_0, init);
+  oled_clear_page(0, 6); // oled clear require some dummy
   oled_print(song_INFO.Title, page_0, init);
   oled_print(song_INFO.Artist, page_3, 0);
   oled_print(song_INFO.Album, page_5, 0);
@@ -316,6 +319,13 @@ void interupt_setup() {
 }
 
 void play_next_ISR() {
+  uint16_t delay = 0;
+  while (gpio1__get_level(0, 25)) {
+    delay++;
+  }
+  while (!gpio1__get_level(0, 25) && (delay != 0)) {
+    delay--;
+  }
   if (gpio1__get_level(0, 22)) {
     xSemaphoreGiveFromISR(next, NULL);
   }
@@ -326,7 +336,15 @@ void play_next_ISR() {
   }
 }
 void play_previous_ISR() {
+  uint16_t delay = 0;
+  while (gpio1__get_level(0, 26)) {
+    delay++;
+  }
+  while (!gpio1__get_level(0, 26) && (delay != 0)) {
+    delay--;
+  }
   pause2 = !pause2;
+
   if (gpio1__get_level(0, 22)) {
     xSemaphoreGiveFromISR(menu, NULL);
   }
@@ -366,7 +384,7 @@ void mp3_SongControl_task(void *p) {
       switch (control_signal) {
       /* -----------------------process NEXT */
       case 0:
-        vTaskDelay(150);
+
         if (xSemaphoreTake(play_next, 10)) {
           /* Loopback when hit last song */
           next_song = current_song;
@@ -389,7 +407,6 @@ void mp3_SongControl_task(void *p) {
 
       /* -----------------------process PREVIOUS */
       case 1:
-        vTaskDelay(150);
         if (xSemaphoreTake(play_previous, 10)) {
           /* Loopback when hit first song */
           previous_song = current_song;
@@ -438,7 +455,6 @@ void mp3_SongControl_task(void *p) {
 void menu_control_task() {
   uint8_t i = 0;
   uint8_t song_select = 0;
-  uint8_t update_list[1];
   while (1) {
     /* Check Menu Button Press */
     if (xSemaphoreTake(menu, portMAX_DELAY)) {
@@ -446,7 +462,6 @@ void menu_control_task() {
       vTaskSuspend(player_handle);
       menu_display_task();
       while (pause2) {
-        oled_invert(song_select);
         vTaskDelay(10);
         if (xSemaphoreTake(next, 0)) {
           song_select++;
@@ -458,7 +473,7 @@ void menu_control_task() {
             vTaskDelay(10);
           }
         }
-        horizontal_scrolling(song_select, song_select);
+        horizontal_scrolling(song_select, song_select, true);
         if (song_select == 5) {
           song_select = 0;
         }
@@ -468,7 +483,7 @@ void menu_control_task() {
       }
       printf("i = % d \n", i);
       current_song = i;
-      oled_clear_page(page_0, page_7);
+      horizontal_scrolling(0, 7, false);
       vTaskResume(player_handle);
       xQueueSend(Q_trackname, song_list__get_name_for_item(i), portMAX_DELAY);
     }

@@ -234,19 +234,32 @@ void horizontal_addr_mode(page_address start_page, page_address stop_page) {
 }
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
-void horizontal_scrolling(page_address start_page, page_address stop_page) {
+void horizontal_scrolling(page_address start_page, page_address stop_page, bool Yes_No) {
   oled_CS();
   {
-    oled_setC_bus();
-    // oled__transfer_byte(0x2E); // OP_code Deactivate scrolling
-    oled__transfer_byte(0x26); // OP_code Set Funct  scrolling
-    oled__transfer_byte(0x00); // dummy byte
-    oled__transfer_byte(0x00 | start_page);
-    oled__transfer_byte(0x05); // OP_code Frame speed
-    oled__transfer_byte(0x00 | stop_page);
-    oled__transfer_byte(0x00); // dummy byte
-    oled__transfer_byte(0xFF); // dummy byte
-    oled__transfer_byte(0x2F); // OP_code Activate scrolling
+    if (Yes_No == true) {
+      oled_setC_bus();
+      // oled__transfer_byte(0x2E); // OP_code Deactivate scrolling
+      oled__transfer_byte(0x26); // OP_code Set Funct  scrolling
+      oled__transfer_byte(0x00); // dummy byte
+      oled__transfer_byte(0x00 | start_page);
+      oled__transfer_byte(0x05); // OP_code Frame speed
+      oled__transfer_byte(0x00 | stop_page);
+      oled__transfer_byte(0x00); // dummy byte
+      oled__transfer_byte(0xFF); // dummy byte
+      oled__transfer_byte(0x2F); // OP_code Activate scrolling
+    } else {
+      oled_setC_bus();
+      // oled__transfer_byte(0x2E); // OP_code Deactivate scrolling
+      oled__transfer_byte(0x26); // OP_code Set Funct  scrolling
+      oled__transfer_byte(0x00); // dummy byte
+      oled__transfer_byte(0x00 | start_page);
+      oled__transfer_byte(0x05); // OP_code Frame speed
+      oled__transfer_byte(0x00 | stop_page);
+      oled__transfer_byte(0x00); // dummy byte
+      oled__transfer_byte(0xFF); // dummy byte
+      oled__transfer_byte(0x2E); // OP_code Activate scrolling
+    }
   }
   oled_DS();
 }
@@ -328,8 +341,7 @@ void oled_print(char *message, page_address page_num, multiple_line init_or_not)
     oled_DS();
   } else {
     oled_CS();
-    /*Clear + Select Row Print [7 <-> 0]*/
-    oled_clear_page(page_num, page_num);
+    /*Select Row [7 <-> 0]*/
     new_line(page_num);
 
     /* Use Lookup Table to search char and Display */
