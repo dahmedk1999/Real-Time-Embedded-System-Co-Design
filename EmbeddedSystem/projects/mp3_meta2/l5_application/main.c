@@ -27,7 +27,7 @@
 #include "string.h"
 #include "uart_lab.h"
 
-/* -------------------------------------------------------------------------- */
+/* ------------------------------- Global Var ------------------------------- */
 typedef struct {
   char Tag[3];
   char Title[30];
@@ -36,15 +36,18 @@ typedef struct {
   char Year[4];
   uint8_t genre;
 } mp3_meta;
+
+volatile bool pause = false;
+volatile bool menu_open = true;
+volatile bool open_menu = true;
+static uint8_t volume = 0;
+volatile uint8_t current_song = 0;
+volatile uint8_t control_signal;
 /* ------------------------------ Queue handle ------------------------------ */
 /* CLI or SONG_Control --> reader_Task */
 QueueHandle_t Q_trackname;
 /* reader_Task --> player_Task */
 QueueHandle_t Q_songdata;
-/* Resume Song_info */
-QueueHandle_t Q_current_song_info;
-/* Resume Playlist */
-QueueHandle_t Q_playlist;
 
 /* ------------------------------- Task Handle ------------------------------ */
 TaskHandle_t player_handle;
@@ -54,21 +57,12 @@ SemaphoreHandle_t control_song;
 SemaphoreHandle_t play_next;
 SemaphoreHandle_t play_previous;
 SemaphoreHandle_t next;
-SemaphoreHandle_t previous;
 SemaphoreHandle_t pause_resume;
 SemaphoreHandle_t volume_up;
-
 SemaphoreHandle_t menu;
-
-volatile bool pause = false;
-volatile bool menu_open = true;
-volatile bool open_menu = true;
-static uint8_t volume = 0;
-volatile uint8_t current_song = 0;
-volatile uint8_t control_signal;
 /* ----------------------------- Control Function ---------------------------- */
 /*INTERUPT SERVICE ROUTINE */
-static void interupt_setup(); //
+static void PIN_and_INTERUPT_setup(); //
 
 /* ISR Button */
 void pause_resume_ISR();
@@ -76,11 +70,14 @@ void play_next_ISR();
 void play_previous_ISR();
 void volume_up_ISR();
 
-/* button_Task */
+/* Button_Task */
 void mp3_SongControl_task();
 void mp3_PlaylistControl_task();
 
 /* Helper Funtions */
+// READER_TASK
+
+// BUTTON
 void reduce_debounce_ISR(uint8_t port_num, uint8_t pin_num);
 void play_next_song(uint8_t next_song);
 void play_previous_song(uint8_t previous_song);
@@ -210,24 +207,21 @@ void mp3_player_task(void *p) {
 int main(void) {
 
   /* ----------------------------- Object control */
-
+  // Queue Payload
   Q_trackname = xQueueCreate(1, sizeof(trackname_t));
   Q_songdata = xQueueCreate(1, 512);
-  Q_current_song_info = xQueueCreate(1, 128);
-  Q_playlist = xQueueCreate(1, sizeof(uint8_t));
-
+  // Song effect
   control_song = xSemaphoreCreateBinary();
   play_next = xSemaphoreCreateBinary();
   play_previous = xSemaphoreCreateBinary();
-  next = xSemaphoreCreateBinary();
-  previous = xSemaphoreCreateBinary();
   pause_resume = xSemaphoreCreateBinary();
-
   volume_up = xSemaphoreCreateBinary();
+  // Playlist menu
   menu = xSemaphoreCreateBinary();
+  next = xSemaphoreCreateBinary();
 
   /* --------------------------- Initialize function */
-  interupt_setup();
+  PIN_and_INTERUPT_setup();
   decoder_setup();
   sj2_cli__init();
   uint16_t current_volume = decoder_read_register(SCI_VOL);
@@ -238,26 +232,29 @@ int main(void) {
   for (size_t song_number = 0; song_number < song_list__get_item_count(); song_number++) {
     printf("-->%2d: %s\n", (1 + song_number), song_list__get_name_for_item(song_number));
   }
+  printf("\n");
+  /* without mp3 */
+  open_directory_READ();
+  for (size_t i = 0; i < song_list__get_item_count2(); i++) {
+    printf("-->%2d: %s\n", (1 + i), get_songName_on_INDEX(i));
+  }
 
   /* ------------------------------- xTaskCreate  */
   xTaskCreate(mp3_reader_task, "task_reader", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
   xTaskCreate(mp3_player_task, "task_player", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, &player_handle);
   xTaskCreate(mp3_SongControl_task, "Song_control", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
   xTaskCreate(mp3_PlaylistControl_task, "menu", (2048) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
-  // xTaskCreate(display_playlist, "Playlist", (2048) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
-  // xTaskCreate(update_playlist, "Up_display", (2048) / sizeof(void *), NULL, 3, NULL);
 
+  /* Never retrun unless RTOS scheduler runs out of memory and fails */
   vTaskStartScheduler();
   return 0;
 }
 
 /* -------------------------------------------------------------------------- */
-/* ----------------------------- Button Function ---------------------------- */
+/* ----------------------------- Interrupt Setup ---------------------------- */
 /* -------------------------------------------------------------------------- */
 
-/* ----------------------------- Interrupt Setup ---------------------------- */
-
-void interupt_setup() {
+void PIN_and_INTERUPT_setup() {
   /*PIN setup*/
   LPC_IOCON->P0_25 &= ~(0b111); // NEXT
   gpio1__set_as_input(0, 25);
@@ -275,7 +272,7 @@ void interupt_setup() {
   gpio0__attach_interrupt(30, GPIO_INTR__FALLING_EDGE, volume_up_ISR);     // Volume
   gpio0__attach_interrupt(25, GPIO_INTR__FALLING_EDGE, play_next_ISR);     // Next
   gpio0__attach_interrupt(26, GPIO_INTR__FALLING_EDGE, play_previous_ISR); // Previous
-  gpio0__attach_interrupt(29, GPIO_INTR__FALLING_EDGE, pause_resume_ISR);
+  gpio0__attach_interrupt(29, GPIO_INTR__FALLING_EDGE, pause_resume_ISR);  // Pause/resume
 }
 
 void play_next_ISR() {
@@ -319,10 +316,8 @@ void volume_up_ISR() {
 }
 
 /******************************** MP3 Song control Task ***********************************
- *@brief: Control song play list (Loopback + Next + Previous)
- *@note:  Loopback at the end (Done)
-          Next song (Done)
-          Previous (Done)
+ *@brief: Control song play list ( Next + Previous + pause/resume  + volume )
+ *@note:  Loopback at the end or begin  (Done)
  ******************************************************************************************/
 void mp3_SongControl_task(void *p) {
   // song_list__populate();
@@ -351,12 +346,16 @@ void mp3_SongControl_task(void *p) {
   }
 }
 
-/* -------------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------- */
+/****************************** MP3 playlist control Task *********************************
+ *@brief: Enter menu + selection( First pressed )
+          Exit  menu + execute-->selection ( Second pressed )
+ *@note:  Pause/ when enter || AND || Resume + execute new selected song / when exit
+ ******************************************************************************************/
 void mp3_PlaylistControl_task() {
   uint8_t list_index = 0;
   uint8_t song_select = 0;
-  int max_size = (song_list__get_item_count() - 1);
+  const int LCD_row_display = 5;
+  int list_max_size = (song_list__get_item_count() - 1);
   while (1) {
     /* Check Menu Button Press */
     if (xSemaphoreTake(menu, portMAX_DELAY)) {
@@ -368,18 +367,18 @@ void mp3_PlaylistControl_task() {
         if (xSemaphoreTake(next, 0)) {
           song_select++;
           list_index++;
-          /*update playlist*/
-          if (list_index % 5 == 0 && list_index != 0) {
+          /*update playlist (use Modulus Operator)*/
+          if (list_index % LCD_row_display == 0 && list_index != 0) {
             update_playlist(list_index);
             vTaskDelay(10);
           }
         }
         /* Conditioning for resize */
         horizontal_scrolling(song_select, song_select, true);
-        if (song_select == 5) {
+        if (song_select == LCD_row_display) {
           song_select = 0;
         }
-        if (list_index == max_size) {
+        if (list_index == list_max_size) {
           list_index = 0;
         }
       }
@@ -396,22 +395,26 @@ void mp3_PlaylistControl_task() {
 
 /* -------------------------------------------------------------------------- */
 /* ----------------------------- HELPER FUNCTION ---------------------------- */
+/* -------------------------------------------------------------------------- */
 
+/* ---------------- Display + Update (playlist menu) ---------------- */
 void display_playlist() {
+  /* songName without .mp3 version */
   oled_clear_page(page_0, page_7);
-  oled_print(song_list__get_name_for_item(0), 0, 0);
-  oled_print(song_list__get_name_for_item(1), 1, 0);
-  oled_print(song_list__get_name_for_item(2), 2, 0);
-  oled_print(song_list__get_name_for_item(3), 3, 0);
-  oled_print(song_list__get_name_for_item(4), 4, 0);
+  oled_print(get_songName_on_INDEX(0), 0, 0);
+  oled_print(get_songName_on_INDEX(1), 1, 0);
+  oled_print(get_songName_on_INDEX(2), 2, 0);
+  oled_print(get_songName_on_INDEX(3), 3, 0);
+  oled_print(get_songName_on_INDEX(4), 4, 0);
 }
 void update_playlist(uint8_t update_value) {
+  /* songName without .mp3 version */
   oled_clear_page(page_0, page_7);
-  oled_print(song_list__get_name_for_item(0 + update_value), 0, 0);
-  oled_print(song_list__get_name_for_item(1 + update_value), 1, 0);
-  oled_print(song_list__get_name_for_item(2 + update_value), 2, 0);
-  oled_print(song_list__get_name_for_item(3 + update_value), 3, 0);
-  oled_print(song_list__get_name_for_item(4 + update_value), 4, 0);
+  oled_print(get_songName_on_INDEX(0 + update_value), 0, 0);
+  oled_print(get_songName_on_INDEX(1 + update_value), 1, 0);
+  oled_print(get_songName_on_INDEX(2 + update_value), 2, 0);
+  oled_print(get_songName_on_INDEX(3 + update_value), 3, 0);
+  oled_print(get_songName_on_INDEX(4 + update_value), 4, 0);
 }
 
 /* ---------------- Reduce debounce rate ---------------- */
