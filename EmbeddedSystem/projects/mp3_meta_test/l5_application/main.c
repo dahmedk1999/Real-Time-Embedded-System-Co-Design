@@ -39,7 +39,6 @@ typedef struct {
 
 volatile bool pause = false;
 volatile bool menu_open = true;
-volatile bool open_menu = true;
 static uint8_t volume = 0;
 volatile uint8_t current_song = 0;
 volatile uint8_t control_signal;
@@ -64,18 +63,19 @@ SemaphoreHandle_t menu;
 /*INTERUPT SERVICE ROUTINE */
 static void PIN_and_INTERUPT_setup(); //
 
-/* ISR Button */
+/* -----ISR Button----- */
 void pause_resume_ISR();
 void play_next_ISR();
 void play_previous_ISR();
 void volume_up_ISR();
 
-/* Button_Task */
+/* -----Button_Task----- */
 void mp3_SongControl_task();
 void mp3_PlaylistControl_task();
 
-/* Helper Funtions */
+/* -----Helper Funtions----- */
 // READER_TASK
+void print_songINFO(char *meta);
 
 // BUTTON
 void reduce_debounce_ISR(uint8_t port_num, uint8_t pin_num);
@@ -83,7 +83,7 @@ void play_next_song(uint8_t next_song);
 void play_previous_song(uint8_t previous_song);
 void pause_resume_song();
 void control_volume();
-void print_songINFO(char *meta);
+
 // PLAYLIST
 void display_playlist();
 void update_playlist(uint8_t update_value);
@@ -235,9 +235,9 @@ int main(void) {
   printf("\n");
   /* without mp3 */
   open_directory_READ();
-  for (size_t i = 0; i < song_list__get_item_count2(); i++) {
-    printf("-->%2d: %s\n", (1 + i), get_songName_on_INDEX(i));
-  }
+  // for (size_t i = 0; i < song_list__get_item_count2(); i++) {
+  //   printf("-->%2d: %s\n", (1 + i), get_songName_on_INDEX(i));
+  // }
 
   /* ------------------------------- xTaskCreate  */
   xTaskCreate(mp3_reader_task, "task_reader", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
