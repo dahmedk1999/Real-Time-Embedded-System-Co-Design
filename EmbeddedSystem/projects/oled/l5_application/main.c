@@ -38,8 +38,8 @@ int main(void) {
 
   /* --------------------------------- Part 1 --------------------------------- */
   oled_print("->CMPE146:RTOS<-", page_0, colum_0, init);
-  oled_print("->2<-", 2, colum_3, 0);
-  oled_print("->3<-", 3, colum_3, 0);
+  oled_print("-2-", 2, colum_0, 0);
+  oled_print("3", 2, colum_7, 0);
   oled_print("->4<-", 4, colum_3, 0);
   oled_print("->5<-", 5, colum_3, 0);
   oled_print("LLLLLL", 6, colum_3, 0);

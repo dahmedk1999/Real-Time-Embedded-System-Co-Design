@@ -20,6 +20,17 @@ typedef enum {
 } page_address;
 
 typedef enum {
+  colum_0,
+  colum_1,
+  colum_2,
+  colum_3,
+  colum_4,
+  colum_5,
+  colum_6,
+  colum_7,
+} colum;
+
+typedef enum {
   not_init,
   init,
 } multiple_line;
@@ -78,13 +89,13 @@ void horizontal_addr_mode(page_address start_page, page_address stop_page);
 void horizontal_scrolling(page_address start_page, page_address stop_page, bool Yes_No);
 
 /* Display String in specific line */
-void new_line(uint8_t line_address);
+void new_line(page_address line_address, colum start_position);
 
 /* Invert the color on single page*/
 void oled_invert(page_address page_num);
 
 /* Print String pointer */
-void oled_print(const char *message, uint8_t pages_num, multiple_line init_or_not);
+void oled_print(const char *message, uint8_t pages_num, colum start_position, multiple_line init_or_not);
 
 /*  Clear string pointer */
 void oled_clear_page(page_address start_page, page_address stop_page);

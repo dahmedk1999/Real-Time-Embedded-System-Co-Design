@@ -104,7 +104,7 @@ void mp3_reader_task(void *p) {
   UINT br; // byte read
   while (1) {
     xQueueReceive(Q_trackname, song_name, portMAX_DELAY);
-    int distance;
+    int distance = 1;
     /* ----- OPEN file ----- */
     const char *file_name = song_name;
     FIL object_file;
@@ -159,8 +159,8 @@ void mp3_reader_task(void *p) {
           second = second - (minute * 60);
         }
         static char playing_time[30];
-        sprintf(playing_time, "(@.@)%2d:%2d", minute, second);
-        oled_print(playing_time, page_7, 0);
+        sprintf(playing_time, "[%2d:%2d]", minute, second);
+        oled_print(playing_time, page_7, 0, 0);
         memset(playing_time, 0, 30);
         distance++;
       }
@@ -404,7 +404,7 @@ void update_playlist(uint8_t update_value) {
   /* songName without .mp3 version */
   oled_clear_page(page_0, page_7);
   for (int page = 0; page < 5; page++) {
-    oled_print(get_songName_on_INDEX(page + update_value), page, 0);
+    oled_print(get_songName_on_INDEX(page + update_value), page, 0, 0);
   }
 }
 
@@ -474,6 +474,10 @@ void control_volume() {
       volume = 0;
     }
     vTaskDelay(150);
+    static char Vol_level[10];
+    sprintf(Vol_level, "Vol:%2d", (13 - volume));
+    oled_print(Vol_level, page_7, 4, 0);
+    memset(Vol_level, 0, 10);
     set_volume(volume++);
     vTaskDelay(150);
   }
@@ -511,10 +515,9 @@ void print_songINFO(char *meta) {
     }
   }
   /* ----- OLED screen ----- */
-  oled_print("Init dummy", page_0, init);
+  oled_print("Init dummy", page_0, 0, init);
   oled_clear_page(0, 6); // oled clear require some dummy
-  oled_print(song_INFO.Title, page_0, init);
-  oled_print(song_INFO.Artist, page_3, 0);
-  oled_print(song_INFO.Album, page_5, 0);
-  // oled_print(song_INFO.Year, page_7, 0);
+  oled_print(song_INFO.Title, page_0, 0, init);
+  oled_print(song_INFO.Artist, page_3, 0, 0);
+  oled_print(song_INFO.Album, page_5, 0, 0);
 }
