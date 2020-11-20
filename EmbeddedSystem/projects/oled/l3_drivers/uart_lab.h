@@ -17,7 +17,7 @@ typedef enum {
   UART_3,
 } uart_number_e;
 
-static QueueHandle_t uart_rx_queue;
+QueueHandle_t uart_rx_queue;
 
 /* ----------------------------- Public Function ---------------------------- */
 /* ------------------------------------ F ----------------------------------- */
@@ -32,10 +32,10 @@ bool uart_lab__receive(uart_number_e uart, char *input_byte);
 bool uart_lab__transmit(uart_number_e uart, char output_byte);
 
 /* Checking UART3 INTR ID --> Copy to Queue from ISR */
-static void uart3_RX_INTR(void);
+void uart3_RX_INTR(void);
 
 /* Checking UART2 INTR ID --> Copy to Queue from ISR */
-static void uart2_RX_INTR(void);
+void uart2_RX_INTR(void);
 
 /* Enable INTR for RX Buffer */
 void uart__enable_RX_INTR(uart_number_e uart, int queue_size);

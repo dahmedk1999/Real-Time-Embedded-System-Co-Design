@@ -158,7 +158,7 @@ void turn_on_lcd() {
   oled_update();
 
   /* Print ("CMPE") */
-  new_line(0);
+  new_line(0, 0);
   char_C();
   char_M();
   char_P();
@@ -234,19 +234,32 @@ void horizontal_addr_mode(page_address start_page, page_address stop_page) {
 }
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
-void horizontal_scrolling(page_address start_page, page_address stop_page) {
+void horizontal_scrolling(page_address start_page, page_address stop_page, bool Yes_No) {
   oled_CS();
   {
-    oled_setC_bus();
-    // oled__transfer_byte(0x2E); // OP_code Deactivate scrolling
-    oled__transfer_byte(0x26); // OP_code Set Funct  scrolling
-    oled__transfer_byte(0x00); // dummy byte
-    oled__transfer_byte(0x00 | start_page);
-    oled__transfer_byte(0x05); // OP_code Frame speed
-    oled__transfer_byte(0x00 | stop_page);
-    oled__transfer_byte(0x00); // dummy byte
-    oled__transfer_byte(0xFF); // dummy byte
-    oled__transfer_byte(0x2F); // OP_code Activate scrolling
+    if (Yes_No == true) {
+      oled_setC_bus();
+      // oled__transfer_byte(0x2E); // OP_code Deactivate scrolling
+      oled__transfer_byte(0x26); // OP_code Set Funct  scrolling
+      oled__transfer_byte(0x00); // dummy byte
+      oled__transfer_byte(0x00 | start_page);
+      oled__transfer_byte(0x05); // OP_code Frame speed
+      oled__transfer_byte(0x00 | stop_page);
+      oled__transfer_byte(0x00); // dummy byte
+      oled__transfer_byte(0xFF); // dummy byte
+      oled__transfer_byte(0x2F); // OP_code Activate scrolling
+    } else {
+      oled_setC_bus();
+      // oled__transfer_byte(0x2E); // OP_code Deactivate scrolling
+      oled__transfer_byte(0x26); // OP_code Set Funct  scrolling
+      oled__transfer_byte(0x00); // dummy byte
+      oled__transfer_byte(0x00 | start_page);
+      oled__transfer_byte(0x05); // OP_code Frame speed
+      oled__transfer_byte(0x00 | stop_page);
+      oled__transfer_byte(0x00); // dummy byte
+      oled__transfer_byte(0xFF); // dummy byte
+      oled__transfer_byte(0x2E); // OP_code Activate scrolling
+    }
   }
   oled_DS();
 }
@@ -271,7 +284,7 @@ _________________________________________________________
 |8-seg |8-seg |8-seg |8-seg |8-seg |8-seg |8-seg |8-seg | --> Page7
 ==============================================================================*/
 // add parameter cho new line
-void new_line(uint8_t line_address) {
+void new_line(page_address line_address, colum start_position) {
   oled_setC_bus();
   /* Page Add [0xB0-0xB7] */
   oled__transfer_byte(0xB0 | line_address);
@@ -280,12 +293,14 @@ void new_line(uint8_t line_address) {
    * --> Set Colum + SEG <--
    *************************/
   uint8_t start_SEG = 0x00;
-  uint8_t start_COLUM = 0x10;
+  uint8_t start_COLUM = (0x10 | start_position);
   oled__transfer_byte(start_SEG);
   oled__transfer_byte(start_COLUM);
 
   oled_setD_bus();
 }
+
+/* Underconstruction...!!!!! */
 void oled_invert(page_address page_num) {
   oled_CS();
   {
@@ -306,7 +321,7 @@ void oled_invert(page_address page_num) {
           The first time call need to init
           --> So we can print Multi-line(page) with different value
 ==============================================================================*/
-void oled_print(char *message, page_address page_num, multiple_line init_or_not) {
+void oled_print(const char *message, page_address page_num, colum start_position, multiple_line init_or_not) {
 
   if (init_or_not) {
     /* Hardware init + Table inti */
@@ -321,7 +336,7 @@ void oled_print(char *message, page_address page_num, multiple_line init_or_not)
     oled_update();
 
     /*Select Row [7 <-> 0]*/
-    new_line(page_num);
+    new_line(page_num, start_position);
 
     /* Use Lookup Table to search char and Display */
     display_char(message);
@@ -329,7 +344,7 @@ void oled_print(char *message, page_address page_num, multiple_line init_or_not)
   } else {
     oled_CS();
     /*Select Row [7 <-> 0]*/
-    new_line(page_num);
+    new_line(page_num, start_position);
 
     /* Use Lookup Table to search char and Display */
     display_char(message);
@@ -362,7 +377,7 @@ static function_pointer_char char_callback[127];
 *@brief:  Using pointer to Print string
 *@Note:   Base in Ascii value to search the lookup table
 ==============================================================================*/
-void display_char(char *string) {
+void display_char(const char *string) {
   oled_CS();
   oled_setD_bus();
   for (int i = 0; i < strlen(string); i++) {

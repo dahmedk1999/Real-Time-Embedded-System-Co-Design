@@ -139,7 +139,7 @@ bool uart_lab__transmit(uart_number_e uart, char output_byte) {
 ===================================================================================================*/
 
 /* --------------------------- UART3_ISR_callback --------------------------- */
-static void uart3_RX_INTR(void) {
+void uart3_RX_INTR(void) {
   /* Check the Interrupt ID Register */
   if (((LPC_UART3->IIR >> 1) & 0xF) == 0x2) {
     /* Status Register-RDR Bits */
@@ -152,7 +152,7 @@ static void uart3_RX_INTR(void) {
   xQueueSendFromISR(uart_rx_queue, &byte, NULL);
 }
 /* --------------------------- UART2_ISR_callback --------------------------- */
-static void uart2_RX_INTR(void) {
+void uart2_RX_INTR(void) {
   /* Check the Interrupt ID Register */
   if (((LPC_UART2->IIR >> 1) & 0xF) == 0x2) {
     /* Status Register-RDR Bits */

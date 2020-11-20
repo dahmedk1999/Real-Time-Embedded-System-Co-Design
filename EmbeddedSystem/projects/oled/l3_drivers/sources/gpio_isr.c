@@ -8,6 +8,12 @@
 // So I try to keep my code simple.
 //( Please let me know if it is a requirement, I can total modify code in live stream meeting)
 
+/* An unregistered interrupt handler is a forever loop */
+static void lpc_peripheral__halt_handler(void) {
+  while (1) { /* Nothing*/
+  }
+}
+
 /*-----Interupt vector table Port 1 + Port 2-------------*/
 static function_pointer_t gpio0_callbacks[64] = {
 
@@ -176,7 +182,7 @@ void gpio0__interrupt_dispatcher(void) {
   attached_user_function();
   /* Clear the interrupt after done ISR */
   LPC_GPIOINT->IO0IntClr |= (1 << pin_that_generated_interrupt);
-  delay__ms(1);
+  // delay__ms(1);
 }
 
 /*===============================gpio2__interrupt_dispatcher (Port 2)======================================
@@ -205,5 +211,5 @@ void gpio2__interrupt_dispatcher(void) {
   attached_user_function();
   /* Clear the interrupt after done ISR */
   LPC_GPIOINT->IO2IntClr |= (1 << pin_that_generated_interrupt);
-  delay__ms(1);
+  // delay__ms(1);
 }

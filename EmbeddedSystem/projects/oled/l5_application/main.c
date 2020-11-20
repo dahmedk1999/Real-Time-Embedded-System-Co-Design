@@ -37,13 +37,13 @@ int main(void) {
   // sj2_cli__init();
 
   /* --------------------------------- Part 1 --------------------------------- */
-  oled_print("->CMPE146:RTOS<-", page_0, init);
-  oled_print("->2<-", 2, 0);
-  oled_print("->3<-", 3, 0);
-  oled_print("->4<-", 4, 0);
-  oled_print("->5<-", 5, 0);
-  oled_print("LLLLLL", 6, 0);
-  oled_print("TTTTTT", 6, 0);
+  oled_print("->CMPE146:RTOS<-", page_0, colum_0, init);
+  oled_print("->2<-", 2, colum_3, 0);
+  oled_print("->3<-", 3, colum_3, 0);
+  oled_print("->4<-", 4, colum_3, 0);
+  oled_print("->5<-", 5, colum_3, 0);
+  oled_print("LLLLLL", 6, colum_3, 0);
+  oled_print("TTTTTT", 6, colum_3, 0);
   oled_clear_page(6, 6);
   // oled_clear_page(5, 5);
 
