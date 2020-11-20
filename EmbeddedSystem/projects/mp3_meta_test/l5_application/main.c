@@ -355,7 +355,7 @@ void mp3_PlaylistControl_task() {
   uint8_t list_index = 0;
   uint8_t song_select = 0;
   const int LCD_row_display = 5;
-  int list_max_size = (song_list__get_item_count() - 1);
+  int list_max_size = (song_list__get_item_count());
   while (1) {
     /* Check Menu Button Press */
     if (xSemaphoreTake(menu, portMAX_DELAY)) {
@@ -380,6 +380,8 @@ void mp3_PlaylistControl_task() {
         }
         if (list_index == list_max_size) {
           list_index = 0;
+          song_select = 0;
+          update_playlist(list_index);
         }
       }
       /* ---------------- Second Press ---------------- */
