@@ -104,7 +104,7 @@ void mp3_reader_task(void *p) {
   UINT br; // byte read
   while (1) {
     xQueueReceive(Q_trackname, song_name, portMAX_DELAY);
-    int distance = 1;
+    int distance;
     /* ----- OPEN file ----- */
     const char *file_name = song_name;
     FIL object_file;

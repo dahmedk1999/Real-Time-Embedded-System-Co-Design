@@ -85,7 +85,6 @@ void pause_resume_song();
 void control_volume();
 
 // PLAYLIST
-void display_playlist();
 void update_playlist(uint8_t update_value);
 
 /************************************* MP3 READER Task  **********************************
@@ -105,7 +104,7 @@ void mp3_reader_task(void *p) {
   UINT br; // byte read
   while (1) {
     xQueueReceive(Q_trackname, song_name, portMAX_DELAY);
-    int distance = 1;
+    int distance;
     /* ----- OPEN file ----- */
     const char *file_name = song_name;
     FIL object_file;
@@ -113,7 +112,7 @@ void mp3_reader_task(void *p) {
 
     /* ----------------------------- READ Song INFO ----------------------------- */
     char meta_128[128];
-    /*************************************************************
+    /***************************************************************
      * f_lseek( ptr_objectFile, ptr_READ/WRITE[top-->bottom] )
      * | --> sizeof(mp3_file) - last_128[byte]
      * | ----> Set READ pointer
@@ -235,9 +234,9 @@ int main(void) {
   printf("\n");
   /* without mp3 */
   open_directory_READ();
-  for (size_t i = 0; i < song_list__get_item_count2(); i++) {
-    printf("-->%2d: %s\n", (1 + i), get_songName_on_INDEX(i));
-  }
+  // for (size_t i = 0; i < song_list__get_item_count2(); i++) {
+  //   printf("-->%2d: %s\n", (1 + i), get_songName_on_INDEX(i));
+  // }
 
   /* ------------------------------- xTaskCreate  */
   xTaskCreate(mp3_reader_task, "task_reader", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
@@ -355,13 +354,13 @@ void mp3_PlaylistControl_task() {
   uint8_t list_index = 0;
   uint8_t song_select = 0;
   const int LCD_row_display = 5;
-  int list_max_size = (song_list__get_item_count() - 1);
+  int list_max_size = (song_list__get_item_count());
   while (1) {
     /* Check Menu Button Press */
     if (xSemaphoreTake(menu, portMAX_DELAY)) {
 
       vTaskSuspend(player_handle);
-      display_playlist();
+      update_playlist(0);
       /* ---------------- First Press ---------------- */
       while (menu_open) {
         if (xSemaphoreTake(next, 0)) {
@@ -378,8 +377,11 @@ void mp3_PlaylistControl_task() {
         if (song_select == LCD_row_display) {
           song_select = 0;
         }
+        /* loopback on last item */
         if (list_index == list_max_size) {
           list_index = 0;
+          song_select = 0;
+          update_playlist(list_index);
         }
       }
       /* ---------------- Second Press ---------------- */
@@ -398,23 +400,12 @@ void mp3_PlaylistControl_task() {
 /* -------------------------------------------------------------------------- */
 
 /* ---------------- Display + Update (playlist menu) ---------------- */
-void display_playlist() {
-  /* songName without .mp3 version */
-  oled_clear_page(page_0, page_7);
-  oled_print(get_songName_on_INDEX(0), 0, 0);
-  oled_print(get_songName_on_INDEX(1), 1, 0);
-  oled_print(get_songName_on_INDEX(2), 2, 0);
-  oled_print(get_songName_on_INDEX(3), 3, 0);
-  oled_print(get_songName_on_INDEX(4), 4, 0);
-}
 void update_playlist(uint8_t update_value) {
   /* songName without .mp3 version */
   oled_clear_page(page_0, page_7);
-  oled_print(get_songName_on_INDEX(0 + update_value), 0, 0);
-  oled_print(get_songName_on_INDEX(1 + update_value), 1, 0);
-  oled_print(get_songName_on_INDEX(2 + update_value), 2, 0);
-  oled_print(get_songName_on_INDEX(3 + update_value), 3, 0);
-  oled_print(get_songName_on_INDEX(4 + update_value), 4, 0);
+  for (int page = 0; page < 5; page++) {
+    oled_print(get_songName_on_INDEX(page + update_value), page, 0);
+  }
 }
 
 /* ---------------- Reduce debounce rate ---------------- */
