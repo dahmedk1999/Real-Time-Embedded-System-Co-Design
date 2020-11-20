@@ -240,10 +240,9 @@ int main(void) {
 
   /* ------------------------------- xTaskCreate  */
   xTaskCreate(mp3_reader_task, "task_reader", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
-  xTaskCreate(mp3_player_task, "task_player", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, &player_handle);
-  xTaskCreate(mp3_SongControl_task, "Song_control", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
-  xTaskCreate(mp3_PlaylistControl_task, "menu", (2048) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
-
+  xTaskCreate(mp3_player_task, "task_player", (2048) / sizeof(void *), NULL, PRIORITY_MEDIUM, &player_handle);
+  xTaskCreate(mp3_SongControl_task, "Song_control", (2048) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
+  xTaskCreate(mp3_PlaylistControl_task, "menu", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
   /* Never retrun unless RTOS scheduler runs out of memory and fails */
   vTaskStartScheduler();
   return 0;

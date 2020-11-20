@@ -240,9 +240,9 @@ int main(void) {
 
   /* ------------------------------- xTaskCreate  */
   xTaskCreate(mp3_reader_task, "task_reader", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
-  xTaskCreate(mp3_player_task, "task_player", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, &player_handle);
-  xTaskCreate(mp3_SongControl_task, "Song_control", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
-  xTaskCreate(mp3_PlaylistControl_task, "menu", (2048) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
+  xTaskCreate(mp3_player_task, "task_player", (2048) / sizeof(void *), NULL, PRIORITY_MEDIUM, &player_handle);
+  xTaskCreate(mp3_SongControl_task, "Song_control", (2048) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
+  xTaskCreate(mp3_PlaylistControl_task, "menu", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
 
   /* Never retrun unless RTOS scheduler runs out of memory and fails */
   vTaskStartScheduler();
@@ -289,7 +289,7 @@ void play_next_ISR() {
 }
 void play_previous_ISR() {
   reduce_debounce_ISR(0, 26);
-  /* toggle menu (pause + enter | resume + execute ) */
+  /* toggle menu (pause + enter | resume + execute) */
   menu_open = !menu_open;
   if (gpio1__get_level(0, 22)) {
     xSemaphoreGiveFromISR(menu, NULL);
@@ -366,7 +366,7 @@ void mp3_PlaylistControl_task() {
         if (xSemaphoreTake(next, 0)) {
           song_select++;
           list_index++;
-          /*update playlist (use Modulus Operator)*/
+          /* Update playlist (use Modulus Operator)*/
           if (list_index % LCD_row_display == 0 && list_index != 0) {
             update_playlist(list_index);
             vTaskDelay(10);
