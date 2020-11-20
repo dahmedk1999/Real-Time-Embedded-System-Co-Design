@@ -85,7 +85,6 @@ void pause_resume_song();
 void control_volume();
 
 // PLAYLIST
-void display_playlist();
 void update_playlist(uint8_t update_value);
 
 /************************************* MP3 READER Task  **********************************
@@ -113,7 +112,7 @@ void mp3_reader_task(void *p) {
 
     /* ----------------------------- READ Song INFO ----------------------------- */
     char meta_128[128];
-    /*************************************************************
+    /***************************************************************
      * f_lseek( ptr_objectFile, ptr_READ/WRITE[top-->bottom] )
      * | --> sizeof(mp3_file) - last_128[byte]
      * | ----> Set READ pointer
@@ -361,7 +360,7 @@ void mp3_PlaylistControl_task() {
     if (xSemaphoreTake(menu, portMAX_DELAY)) {
 
       vTaskSuspend(player_handle);
-      display_playlist();
+      update_playlist(0);
       /* ---------------- First Press ---------------- */
       while (menu_open) {
         if (xSemaphoreTake(next, 0)) {
@@ -378,6 +377,7 @@ void mp3_PlaylistControl_task() {
         if (song_select == LCD_row_display) {
           song_select = 0;
         }
+        /* loopback on last item */
         if (list_index == list_max_size) {
           list_index = 0;
           song_select = 0;
@@ -400,23 +400,12 @@ void mp3_PlaylistControl_task() {
 /* -------------------------------------------------------------------------- */
 
 /* ---------------- Display + Update (playlist menu) ---------------- */
-void display_playlist() {
-  /* songName without .mp3 version */
-  oled_clear_page(page_0, page_7);
-  oled_print(get_songName_on_INDEX(0), 0, 0);
-  oled_print(get_songName_on_INDEX(1), 1, 0);
-  oled_print(get_songName_on_INDEX(2), 2, 0);
-  oled_print(get_songName_on_INDEX(3), 3, 0);
-  oled_print(get_songName_on_INDEX(4), 4, 0);
-}
 void update_playlist(uint8_t update_value) {
   /* songName without .mp3 version */
   oled_clear_page(page_0, page_7);
-  oled_print(get_songName_on_INDEX(0 + update_value), 0, 0);
-  oled_print(get_songName_on_INDEX(1 + update_value), 1, 0);
-  oled_print(get_songName_on_INDEX(2 + update_value), 2, 0);
-  oled_print(get_songName_on_INDEX(3 + update_value), 3, 0);
-  oled_print(get_songName_on_INDEX(4 + update_value), 4, 0);
+  for (int page = 0; page < 5; page++) {
+    oled_print(get_songName_on_INDEX(page + update_value), page, 0);
+  }
 }
 
 /* ---------------- Reduce debounce rate ---------------- */
