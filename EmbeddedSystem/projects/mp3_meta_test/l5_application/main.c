@@ -76,6 +76,8 @@ void mp3_PlaylistControl_task();
 /* -----Helper Funtions----- */
 // READER_TASK
 void print_songINFO(char *meta);
+void read_songINFO(const char *input_filename);
+void print_songProgess(int input_progress);
 
 // BUTTON
 void reduce_debounce_ISR(uint8_t port_num, uint8_t pin_num);
@@ -104,26 +106,14 @@ void mp3_reader_task(void *p) {
   UINT br; // byte read
   while (1) {
     xQueueReceive(Q_trackname, song_name, portMAX_DELAY);
-    int distance = 1;
-    /* ----- OPEN file ----- */
+    /* ----------------- Extract SongInfo ----------------- */
+    const char *Input_fileName = song_name;
+    read_songINFO(Input_fileName); // Print_oled included
+    /* ---------------- OPEN + READ file ------------------ */
+    int song_progress = 1;
     const char *file_name = song_name;
     FIL object_file;
     FRESULT result = f_open(&object_file, file_name, (FA_READ));
-
-    /* ----------------------------- READ Song INFO ----------------------------- */
-    char meta_128[128];
-    /***************************************************************
-     * f_lseek( ptr_objectFile, ptr_READ/WRITE[top-->bottom] )
-     * | --> sizeof(mp3_file) - last_128[byte]
-     * | ----> Set READ pointer
-     * | ------> Extract meta file
-     * | --------> Put the READ pointer back to [0]
-     **************************************************************/
-    f_lseek(&object_file, f_size(&object_file) - (sizeof(char) * 128));
-    f_read(&object_file, meta_128, sizeof(meta_128), &br);
-    print_songINFO(meta_128);
-    f_lseek(&object_file, 0);
-    /* -------------------------------------------------------------------------- */
     if (FR_OK == result) {
       /* Update NEW "br" for Loopback */
       f_read(&object_file, TX_buffer512, sizeof(TX_buffer512), &br);
@@ -133,40 +123,14 @@ void mp3_reader_task(void *p) {
         xQueueSend(Q_songdata, TX_buffer512, portMAX_DELAY);
         /* New Song request (CLI) */
         if (uxQueueMessagesWaiting(Q_trackname)) {
-          // printf("New song request\n");
           break;
         }
-        /* ----------------------- Calculate Real-Time Playing ----------------------- */
-        /**************************************************************
-         * Distance: Total number of time tranfer 512B_byte           *
-         * Time    : Song Duration                                    *
-         * Speed   : How many time 512_byte is transfer/second        *
-         * ------------------------For Example------------------------*
-         *  Time: 3:45 min                                            *
-         *  Distance: 17767 times transfer 512_byte                   *
-         *  The estimation will be ---> 17767/225 = 78.964            *
-         *  Then 78.964/2 = 39(+-5) (cause we have 2 task)            *
-         *  This measurement is not 100% matching but 95%             *
-         *  However, It just apply for 128 bit/rate song              *
-         * ---->with 320 bit/rate song it is run faster               *
-         * ---->Same duration but diffrent size of mp3 file           *
-         * ---->Speed change  (need to work on this)                  *
-         **************************************************************/
-        static uint8_t speed = 35; // 78.964;
-        uint8_t second = distance / speed;
-        uint8_t minute = distance / (speed * 60);
-        if (second > 60) {
-          second = second - (minute * 60);
-        }
-        static char playing_time[30];
-        sprintf(playing_time, "[%2d:%2d]", minute, second);
-        oled_print(playing_time, page_7, 0, 0);
-        memset(playing_time, 0, 30);
-        distance++;
+        /* Display Clock on OLED */
+        print_songProgess(song_progress++);
       }
-      /* ----- Automate Next ----- */
+      /* ------------------- Automate Next ------------------- */
       if (br == 0) {
-        distance = 1;
+        song_progress = 1;
         xSemaphoreGive(control_song);
         xSemaphoreGive(play_next);
         control_signal = 0;
@@ -178,11 +142,11 @@ void mp3_reader_task(void *p) {
     }
   }
 }
-/************************************* MP3 Player Task ************************************
+/******************************** MP3 Player Task **********************************
  *@brief: Receive reader_task(Queue song_data)
           Send every singple byte from buffer to Decoder
  *@note:  Need to wait for Data Request pin (DREQ_HighActive)
- ******************************************************************************************/
+ ***********************************************************************************/
 void mp3_player_task(void *p) {
   int counter = 1;
   while (1) {
@@ -241,8 +205,8 @@ int main(void) {
   /* ------------------------------- xTaskCreate  */
   xTaskCreate(mp3_reader_task, "task_reader", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
   xTaskCreate(mp3_player_task, "task_player", (2048) / sizeof(void *), NULL, PRIORITY_MEDIUM, &player_handle);
-  xTaskCreate(mp3_SongControl_task, "Song_control", (2048) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
-  xTaskCreate(mp3_PlaylistControl_task, "menu", (2048 * 4) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
+  xTaskCreate(mp3_SongControl_task, "Song_control", (2048 * 2) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
+  xTaskCreate(mp3_PlaylistControl_task, "menu", (2048 * 5) / sizeof(void *), NULL, PRIORITY_MEDIUM, NULL);
 
   /* Never retrun unless RTOS scheduler runs out of memory and fails */
   vTaskStartScheduler();
@@ -317,9 +281,8 @@ void volume_up_ISR() {
 /******************************** MP3 Song control Task ***********************************
  *@brief: Control song play list ( Next + Previous + pause/resume  + volume )
  *@note:  Loopback at the end or begin  (Done)
- ******************************************************************************************/
+ *******************************************************************************************/
 void mp3_SongControl_task(void *p) {
-  // song_list__populate();
   while (1) {
     /* Check any Switch is Pressed */
     if (xSemaphoreTake(control_song, portMAX_DELAY)) {
@@ -372,8 +335,8 @@ void mp3_PlaylistControl_task() {
             vTaskDelay(10);
           }
         }
-        /* Conditioning for resize */
         horizontal_scrolling(song_select, song_select, true);
+        /* Conditioning for resize */
         if (song_select == LCD_row_display) {
           song_select = 0;
         }
@@ -412,7 +375,7 @@ void update_playlist(uint8_t update_value) {
 void reduce_debounce_ISR(uint8_t port_num, uint8_t pin_num) {
   uint16_t delay = 0;
   while (gpio1__get_level(port_num, pin_num)) {
-    delay = delay + 10;
+    delay = delay + 100;
   }
   while (!gpio1__get_level(port_num, pin_num) && (delay != 0)) {
     delay--;
@@ -431,7 +394,7 @@ void play_next_song(uint8_t next_song) {
     else if (next_song != 0) {
       xQueueSend(Q_trackname, song_list__get_name_for_item(++next_song), portMAX_DELAY);
       current_song = next_song;
-    } /* First song*/
+    } /* First song */
     else {
       // next_song = 0;
       xQueueSend(Q_trackname, song_list__get_name_for_item(next_song++), portMAX_DELAY);
@@ -482,7 +445,11 @@ void control_volume() {
     vTaskDelay(150);
   }
 }
-/* ---------------- Process last_128 Byte file.mp3 ---------------- */
+/* -------------------------------------------------------------------------- */
+/* --------- Process last_128 Byte file.mp3 + Print playing progress -------- */
+/* -------------------------------------------------------------------------- */
+
+/* ---------- Print song INFO on oled screen ---------- */
 void print_songINFO(char *meta) {
   // int index_counter = 0;
   // char meta_array[128] = {"0"};
@@ -520,4 +487,62 @@ void print_songINFO(char *meta) {
   oled_print(song_INFO.Title, page_0, 0, init);
   oled_print(song_INFO.Artist, page_3, 0, 0);
   oled_print(song_INFO.Album, page_5, 0, 0);
+}
+
+/* ---------- Read File to extract song INFO ---------- */
+void read_songINFO(const char *input_filename) {
+  /* ----- OPEN file ----- */
+  FIL object_file;
+  FRESULT result = f_open(&object_file, input_filename, (FA_READ));
+  UINT br; // byte read
+  char meta_128[128];
+  /* --------------------- READ Song INFO ---------------------- */
+  /***************************************************************
+   * f_lseek(ptr_objectFile, ptr_READ/WRITE[top-->bottom])
+   * | --> sizeof(mp3_file) - last_128[byte]
+   * | ----> Set READ pointer
+   * | ------> Extract meta file
+   * | --------> Put the READ pointer back to [0]
+   * | ----------> Close file
+   ***************************************************************/
+  if (FR_OK == result) {
+    f_lseek(&object_file, f_size(&object_file) - (sizeof(char) * 128));
+    f_read(&object_file, meta_128, sizeof(meta_128), &br);
+    print_songINFO(meta_128);
+    f_lseek(&object_file, 0);
+    f_close(&object_file);
+  } else {
+    printf("Extact mp3 file fail\n");
+  }
+}
+
+/* ---------- Calculate the Song Progress ---------- */
+void print_songProgess(int input_progress) {
+  static uint8_t speed = 35; // 78.964;
+  uint8_t second = input_progress / speed;
+  uint8_t minute = input_progress / (speed * 60);
+  /* -------------- Calculate Real-Time Playing -------------- */
+  /**************************************************************
+   * song_progress: Total number of time tranfer 512B_byte      *
+   * Time         : Song Duration                               *
+   * Speed        : How many time 512_byte is transfer/second   *
+   * ------------------------For Example------------------------*
+   *  Time: 3:45 min                                            *
+   *  song_progress: 17767 times transfer 512_byte              *
+   *  The estimation will be ---> 17767/225 = 78.964            *
+   *  Then 78.964/2 = 39(+-5) (cause we have 2 task)            *
+   *  This measurement is not 100% matching but 95%             *
+   *  However, It just apply for 128 bit/rate song              *
+   * ---->with 320 bit/rate song it is run faster               *
+   * ---->Same duration but diffrent size of mp3 file           *
+   * ---->Speed change  (need to work on this)                  *
+   **************************************************************/
+
+  if (second > 60) {
+    second = second - (minute * 60);
+  }
+  static char playing_time[30];
+  sprintf(playing_time, "[%2d:%2d]", minute, second);
+  oled_print(playing_time, page_7, 0, 0);
+  memset(playing_time, 0, 30);
 }

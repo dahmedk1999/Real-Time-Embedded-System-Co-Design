@@ -4,6 +4,8 @@
         "filesystem": "c",
         "xstring": "c",
         "cstddef": "c",
-        "random": "c"
+        "random": "c",
+        "iterator": "c",
+        "xutility": "c"
     }
 }
