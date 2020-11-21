@@ -60,10 +60,10 @@ SemaphoreHandle_t pause_resume;
 SemaphoreHandle_t volume_up;
 SemaphoreHandle_t menu;
 /* ----------------------------- Control Function ---------------------------- */
-/*INTERUPT SERVICE ROUTINE */
-static void PIN_and_INTERUPT_setup(); //
+/*INTERRUPT SERVICE ROUTINE */
+static void PIN_and_INTERRUPT_setup(); //
 
-/* -----ISR Button----- */
+/* -----ISR Buttons----- */
 void pause_resume_ISR();
 void play_next_ISR();
 void play_previous_ISR();
@@ -77,7 +77,7 @@ void mp3_PlaylistControl_task();
 // READER_TASK
 void print_songINFO(char *meta);
 
-// BUTTON
+// BUTTONS
 void reduce_debounce_ISR(uint8_t port_num, uint8_t pin_num);
 void play_next_song(uint8_t next_song);
 void play_previous_song(uint8_t previous_song);
@@ -147,8 +147,8 @@ void mp3_reader_task(void *p) {
          *  The estimation will be ---> 17767/225 = 78.964            *
          *  Then 78.964/2 = 39(+-5) (cause we have 2 task)            *
          *  This measurement is not 100% matching but 95%             *
-         *  However, It just apply for 128 bit/rate song              *
-         * ---->with 320 bit/rate song it is run faster               *
+         *  However, It only applies to 128 bitrate songs              *
+         * ---->with 320 bitrate song it runs faster               *
          * ---->Same duration but diffrent size of mp3 file           *
          * ---->Speed change  (need to work on this)                  *
          **************************************************************/
@@ -159,7 +159,7 @@ void mp3_reader_task(void *p) {
           second = second - (minute * 60);
         }
         static char playing_time[30];
-        sprintf(playing_time, "[%2d:%2d]", minute, second);
+        sprintf(playing_time, "[%02d:%02d]", minute, second);
         oled_print(playing_time, page_7, 0, 0);
         memset(playing_time, 0, 30);
         distance++;
@@ -220,7 +220,7 @@ int main(void) {
   next = xSemaphoreCreateBinary();
 
   /* --------------------------- Initialize function */
-  PIN_and_INTERUPT_setup();
+  PIN_and_INTERRUPT_setup();
   decoder_setup();
   sj2_cli__init();
   uint16_t current_volume = decoder_read_register(SCI_VOL);
@@ -253,7 +253,7 @@ int main(void) {
 /* ----------------------------- Interrupt Setup ---------------------------- */
 /* -------------------------------------------------------------------------- */
 
-void PIN_and_INTERUPT_setup() {
+void PIN_and_INTERRUPT_setup() {
   /*PIN setup*/
   LPC_IOCON->P0_25 &= ~(0b111); // NEXT
   gpio1__set_as_input(0, 25);
@@ -315,7 +315,7 @@ void volume_up_ISR() {
 }
 
 /******************************** MP3 Song control Task ***********************************
- *@brief: Control song play list ( Next + Previous + pause/resume  + volume )
+ *@brief: Control song playlist ( Next + Previous + pause/resume  + volume )
  *@note:  Loopback at the end or begin  (Done)
  ******************************************************************************************/
 void mp3_SongControl_task(void *p) {
@@ -346,8 +346,8 @@ void mp3_SongControl_task(void *p) {
 }
 
 /****************************** MP3 playlist control Task *********************************
- *@brief: Enter menu + selection( First pressed )
-          Exit  menu + execute-->selection ( Second pressed )
+ *@brief: Enter menu + selection( First press )
+          Exit  menu + execute-->selection ( Second press )
  *@note:  Pause/ when enter || AND || Resume + execute new selected song / when exit
  ******************************************************************************************/
 void mp3_PlaylistControl_task() {

@@ -61,7 +61,7 @@ SemaphoreHandle_t volume_up;
 SemaphoreHandle_t menu;
 /* ----------------------------- Control Function ---------------------------- */
 /*INTERUPT SERVICE ROUTINE */
-static void PIN_and_INTERUPT_setup(); //
+static void PIN_and_INTERRUPT_setup(); //
 
 /* -----ISR Button----- */
 void pause_resume_ISR();
@@ -220,7 +220,7 @@ int main(void) {
   next = xSemaphoreCreateBinary();
 
   /* --------------------------- Initialize function */
-  PIN_and_INTERUPT_setup();
+  PIN_and_INTERRUPT_setup();
   decoder_setup();
   sj2_cli__init();
   uint16_t current_volume = decoder_read_register(SCI_VOL);
@@ -252,7 +252,7 @@ int main(void) {
 /* ----------------------------- Interrupt Setup ---------------------------- */
 /* -------------------------------------------------------------------------- */
 
-void PIN_and_INTERUPT_setup() {
+void PIN_and_INTERRUPT_setup() {
   /*PIN setup*/
   LPC_IOCON->P0_25 &= ~(0b111); // NEXT
   gpio1__set_as_input(0, 25);
