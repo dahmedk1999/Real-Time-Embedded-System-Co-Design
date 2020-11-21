@@ -244,7 +244,7 @@ void mp3_player_task(void *p) {
 int main(void) {
 
   /* ----------------------------- Object control */
-  turn_on_lcd();
+
   Q_trackname = xQueueCreate(1, sizeof(trackname_t));
   Q_songdata = xQueueCreate(1, 512);
   Q_current_song_info = xQueueCreate(1, 128);
