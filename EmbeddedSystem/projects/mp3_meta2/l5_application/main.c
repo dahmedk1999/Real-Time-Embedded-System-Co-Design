@@ -318,7 +318,6 @@ void volume_up_ISR() {
  *@note:  Loopback at the end or begin  (Done)
  ******************************************************************************************/
 void mp3_SongControl_task(void *p) {
-  // song_list__populate();
   while (1) {
     /* Check any Switch is Pressed */
     if (xSemaphoreTake(control_song, portMAX_DELAY)) {

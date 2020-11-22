@@ -270,7 +270,6 @@ void horizontal_scrolling(page_address start_page, page_address stop_page, bool 
           * Require command_bus (ON)
           * Page Address range [0xB0 -- 0xB7]
           * ONE colum = EIGHT seg
-          *
 _________________________________________________________
 |Colum0|Colum1|Colum2|Colum3|Colum4|Colum5|Colum6|Colum7|
 ---------------------------------------------------------
