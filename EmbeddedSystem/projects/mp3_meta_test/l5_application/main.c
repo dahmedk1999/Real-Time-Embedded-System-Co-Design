@@ -125,7 +125,6 @@ void mp3_reader_task(void *p) {
         if (uxQueueMessagesWaiting(Q_trackname)) {
           break;
         }
-<<<<<<< HEAD
         /* ----------------------- Calculate Real-Time Playing ----------------------- */
         /**************************************************************
          * Distance: Total number of time tranfer 512B_byte           *
@@ -153,10 +152,6 @@ void mp3_reader_task(void *p) {
         oled_print(playing_time, page_7, 0, 0);
         memset(playing_time, 0, 30);
         distance++;
-=======
-        /* Display Clock on OLED */
-        print_songProgess(song_progress++);
->>>>>>> b266d8af5e0a9d813c2091ff62070fa056788b76
       }
       /* ------------------- Automate Next ------------------- */
       if (br == 0) {
