@@ -159,7 +159,7 @@ void mp3_reader_task(void *p) {
           second = second - (minute * 60);
         }
         static char playing_time[30];
-        sprintf(playing_time, "(@.@)%2d:%2d", minute, second);
+        sprintf(playing_time, "(@.@)%02d:%02d", minute, second);
         oled_print(playing_time, page_7, 0);
         memset(playing_time, 0, 30);
         distance++;
