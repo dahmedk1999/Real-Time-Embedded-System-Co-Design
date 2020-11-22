@@ -42,9 +42,11 @@ volatile bool menu_open = true;
 static uint8_t volume = 0;
 volatile uint8_t current_song = 0;
 volatile uint8_t control_signal;
+
 /* *************************************************************************** */
 /* ------------------------------ Queue handle ------------------------------ */
 /* ************************************************************************* */
+
 /* CLI or SONG_Control --> reader_Task */
 QueueHandle_t Q_trackname;
 /* reader_Task --> player_Task */
@@ -53,6 +55,7 @@ QueueHandle_t Q_songdata;
 /* *************************************************************************** */
 /* ------------------------------- Task Handle ------------------------------ */
 /* ************************************************************************* */
+
 TaskHandle_t player_handle;
 
 /* *************************************************************************** */
@@ -72,15 +75,18 @@ SemaphoreHandle_t menu;
 /* ************************************************************************** */
 
 /* ----- INTERUPT SERVICE ROUTINE ----- */
+
 static void PIN_and_INTERUPT_setup(); //
 
 /* ----- ISR Button ----- */
+
 void pause_resume_ISR();
 void play_next_ISR();     // | Next     |OR| Move down menu |
 void play_previous_ISR(); // | Previous |OR| Enter/Exit mnu |
 void volume_up_ISR();
 
 /* ----- Helper Funtions ----- */
+
 // READER_TASK
 void print_songINFO(char *meta);
 void read_songINFO(const char *input_filename);
@@ -253,8 +259,7 @@ int main(void) {
   PIN_and_INTERUPT_setup();
   decoder_setup();
   sj2_cli__init();
-  uint16_t current_volume = decoder_read_register(SCI_VOL);
-  printf("VOL1: %x\n", current_volume);
+
 
   /* ---------------------------- Testing Song List  */
   song_list__populate();
